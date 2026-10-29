@@ -1,0 +1,210 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Tokens semánticos. Los componentes nunca usan colores crudos: usan estos.
+   El tema oscuro es un override de variables, no una segunda pasada de clases.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-canvas: #faf9f7;
+  --color-surface: #ffffff;
+  --color-border: #e7e3dc;
+  --color-ink: #1c1917;
+  --color-muted: #6b6360;
+  --color-accent: #0d9488;
+  --color-accent-soft: #f0fdfa;
+  --color-success: #059669;
+
+  --radius-block: 16px;
+  --radius-control: 12px;
+
+  --ease-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --font-sans:
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-canvas: #0c0a09;
+    --color-surface: #1c1917;
+    --color-border: #292524;
+    --color-ink: #fafaf9;
+    --color-muted: #a8a29e;
+    --color-accent: #2dd4bf;
+    --color-accent-soft: #042f2e;
+    --color-success: #34d399;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-accent) 22%, transparent);
+  }
+
+  /* Nunca se elimina el foco: se reemplaza por un anillo visible y consistente. */
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-accent) 70%, transparent);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Animaciones. Todas confirman algo: entrada de nota, completado, llegada, toast.
+   Fuera de `motion-safe` no existen, para que el estado reducido sea instantáneo.
+--------------------------------------------------------------------------- */
+@keyframes note-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes note-collapse {
+  from {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@keyframes note-check-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes note-pulse {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-success) 40%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 12px transparent;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Estructura estable: el wrapper siempre es grid de 1fr, así el colapso a 0fr
+   no necesita medir alturas ni forzar reflow desde JS. */
+.note-collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+/* El tachado existe siempre pero transparente: al completar solo cambia el
+   color, así no hay salto de layout y funciona en textos de una o dos líneas. */
+.note-text {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: transparent;
+}
+
+/* Estado persistido de una nota ya realizada. */
+.note-text--done {
+  text-decoration-color: color-mix(in oklab, var(--color-muted) 80%, transparent);
+}
+
+/* El contenido se desvanece al llegar al composer, sin líneas duras. */
+.scroll-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 20px), transparent 100%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-note-enter {
+    animation: note-enter 320ms var(--ease-quart) both;
+  }
+
+  .animate-note-pulse {
+    animation: note-pulse 900ms var(--ease-quart) both;
+  }
+
+  .animate-toast-in {
+    animation: toast-in 220ms var(--ease-quart) both;
+  }
+
+  .note-check {
+    transition:
+      background-color 160ms linear,
+      border-color 160ms linear,
+      transform 200ms var(--ease-spring);
+  }
+
+  .note-check-path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  .note-text {
+    transition:
+      text-decoration-color 200ms var(--ease-quart) 120ms,
+      color 200ms linear 120ms;
+  }
+
+  [data-phase='completing'] .note-check {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+    transform: scale(1.06);
+  }
+
+  [data-phase='completing'] .note-check-path {
+    animation: note-check-draw 260ms var(--ease-quart) forwards;
+  }
+
+  [data-phase='completing'] .note-text {
+    color: var(--color-muted);
+    text-decoration-color: color-mix(in oklab, var(--color-muted) 80%, transparent);
+  }
+
+  .note-collapse[data-phase='completing'] {
+    animation: note-collapse 280ms var(--ease-quart) 420ms both;
+  }
+}
