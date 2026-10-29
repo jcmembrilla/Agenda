@@ -48,6 +48,24 @@ export function NoteIcon(props: IconProps) {
   );
 }
 
+export function CalendarIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3.75" y="5.25" width="16.5" height="15" rx="2" />
+      <path d="M7.75 3.75v3M16.25 3.75v3M3.75 9.25h16.5M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01" />
+    </Icon>
+  );
+}
+
+export function RoutineIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20 7v5h-5M4 17v-5h5" />
+      <path d="M5.65 9A7 7 0 0 1 17.4 6.6L20 12M4 12l2.6 5.4A7 7 0 0 0 18.35 15" />
+    </Icon>
+  );
+}
+
 export function InstallIcon(props: IconProps) {
   return (
     <Icon {...props}>

@@ -18,12 +18,15 @@ export interface Note {
   updatedAt: number;
   completedAt: number;
   deleted: 0 | 1;
+  scheduledDate?: string;
 }
 
 export interface NoteInput {
   text: string;
+  scheduledDate?: string;
 }
 
 export interface NotePatch {
   text: string;
+  scheduledDate?: string;
 }

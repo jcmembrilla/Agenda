@@ -4,6 +4,8 @@ import { AnotadorDB } from '../../lib/db';
 import {
   createNotesRepository,
   normalizeNoteText,
+  normalizeScheduledDate,
+  NoteDateValidationError,
   NoteNotFoundError,
   NoteValidationError,
   type NotesRepository,
@@ -147,5 +149,21 @@ describe('notesRepository', () => {
     await repository.complete(first.id);
 
     expect(await repository.countByStatus()).toEqual({ pending: 2, done: 1 });
+  });
+
+  it('valida fechas locales y rechaza fechas inexistentes', () => {
+    expect(normalizeScheduledDate('2028-02-29')).toBe('2028-02-29');
+    expect(() => normalizeScheduledDate('2027-02-29')).toThrow(NoteDateValidationError);
+    expect(() => normalizeScheduledDate('0027-02-01')).toThrow(NoteDateValidationError);
+  });
+
+  it('crea y consulta tareas programadas por rango de fechas', async () => {
+    const first = await repository.create({ text: 'cita', scheduledDate: '2028-03-12' });
+    await repository.create({ text: 'fuera del rango', scheduledDate: '2028-03-20' });
+    await repository.create({ text: 'sin fecha' });
+
+    const notes = await repository.listScheduledBetween('2028-03-10', '2028-03-15');
+
+    expect(notes.map((note) => note.id)).toEqual([first.id]);
   });
 });

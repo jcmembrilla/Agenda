@@ -2,11 +2,14 @@
 
 Una agenda PWA offline-first minimalista hecha con React + Vite + Tailwind + Dexie.
 
-Un bloc de notas simple donde anotar pendientes y marcarlas como realizadas con un check. Las completadas pasan a la pestaña _Realizadas_ sin quedar tachadas. Se pueden borrar individualmente o en conjunto, con opción para deshacer.
+Una agenda personal con tres áreas: **Tareas**, **Rutina** y **Almanaque**. Las notas rápidas conservan Pendientes/Realizadas; las rutinas se repiten en días elegidos y las tareas fechadas se muestran tanto en la semana como en el almanaque, sin duplicar registros. No hay una sección separada de Trabajo.
 
 ## Características
 
 - **Componer** notas desde la parte inferior; cada nota es un bloque de texto.
+- **Rutina** organiza actividades semanales recurrentes y tareas puntuales en cada día.
+- **Almanaque** muestra los doce meses del año para crear y consultar tareas por fecha.
+- Las fechas se guardan como `YYYY-MM-DD` local para evitar cambios de día por zona horaria.
 - **Completar** → mueve la nota a _Realizadas_ con animación de check y colapso; el texto no queda tachado.
 - **Deslizar hacia la derecha** en una pendiente (móvil o escritorio) para completarla; una barrida verde a pantalla completa muestra el check antes de guardarla. El botón con flecha también permite completarla con clic o teclado.
 - **No se pueden reabrir** las completadas — solo borrar, y quedan en _Realizadas_ hasta que se eliminan.
@@ -15,7 +18,7 @@ Un bloc de notas simple donde anotar pendientes y marcarlas como realizadas con 
 - Estilo **papel cálido + teal**: `#FAF9F7` / `#0D9488`.
 - **PWA ligera**: `registerType: 'prompt'` + `injectRegister: null`; SW desactivada en dev.
 - **Instalable**: botón de instalación y guía para navegadores sin diálogo nativo.
-- Sin router: tabs via `location.hash` (`#pendientes` / `#realizadas`) para el botón Atrás de Android.
+- Sin router: tabs via `location.hash` (`#tareas` / `#rutina` / `#almanaque`) para el botón Atrás de Android. Los hashes antiguos se aceptan como entrada a Tareas.
 - Íconos generados por script propio (sin dependencias).
 
 ## Pila tecnológica (bloqueado)
@@ -40,7 +43,7 @@ Un bloc de notas simple donde anotar pendientes y marcarlas como realizadas con 
 - **Sin librerías de animación**: keyframes puras CSS; strike-through animado vía `text-decoration-color` transition.
 - **Colapso por grid**: `grid-template-rows: 1fr → 0fr` sin medir altura.
 - **Iconos**: generados por `scripts/generate-icons.mjs` (script PNG a mano, supersampling 4×4).
-- **Sin router**: 30 líneas, 0 KB; hash `#pendientes` / `#realizadas` para Android Back.
+- **Sin router**: hash de tres áreas para Android Back; Pendientes/Realizadas son pestañas internas de Tareas.
 - **Reducida**: `prefers-reduced-motion` salta animación y persiste al instante.
 
 ## Scripts disponibles
@@ -64,15 +67,16 @@ src/
   styles/       # tokens, keyframes, dark override
   features/
     notes/
-      types.ts   # Note, NoteInput, NoteStatus, NoteCounts, NoteValidationError, NoteNotFoundError
-      repository.ts # createNotesRepository, normalizeNoteText, complete, softDelete, restore
+      notes.types.ts
+      notes.repository.ts # notas rápidas y tareas fechadas
       hooks/     # useNotes, useNoteMutations, useCompleteAnimation, useHashTab
       components/
-        NoteBlock.tsx     # pending/done rendering, inline edit, delete, animation container
-        NoteComposer.tsx  # bottom composer, 100-char limit, autosize
-        CheckButton.tsx   # 28px circle dentro de 44px hit area
-        NoteList.tsx
-        NotesTabs.tsx
+        MainTabs.tsx, TasksView.tsx, DatedNotes.tsx
+    routine/
+      routines.repository.ts
+      RoutineView.tsx
+    almanac/
+      AlmanacView.tsx
   components/  # ui/ (IconButton, Toaster, EmptyState, CheckButton, TrashIcon)
   pwa/         # OfflineBanner, UpdateBanner
   App.tsx      # shell, hash tab, undo toast flow

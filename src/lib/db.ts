@@ -1,8 +1,9 @@
 import Dexie, { type Table } from 'dexie';
 import type { Note } from '../features/notes/notes.types';
+import type { Routine, RoutineOccurrence } from '../features/routine/routines.types';
 
 /**
- * Esquema v1.
+ * Esquema v2.
  *
  * Los índices compuestos son la razón por la que `status` y `deleted` viven en el
  * registro en lugar de derivarse: IndexedDB no puede filtrar por dos claves
@@ -11,11 +12,19 @@ import type { Note } from '../features/notes/notes.types';
  */
 export class AnotadorDB extends Dexie {
   notes!: Table<Note, string>;
+  routines!: Table<Routine, string>;
+  routineOccurrences!: Table<RoutineOccurrence, string>;
 
   constructor(name = 'anotador') {
     super(name);
     this.version(1).stores({
       notes: 'id, status, createdAt, [deleted+status+createdAt], [deleted+status+completedAt]',
+    });
+    this.version(2).stores({
+      notes:
+        'id, status, createdAt, [deleted+status+createdAt], [deleted+status+completedAt], [deleted+scheduledDate+createdAt]',
+      routines: 'id, createdAt, updatedAt',
+      routineOccurrences: 'id, date, routineId, [date+routineId]',
     });
   }
 }

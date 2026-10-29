@@ -1,13 +1,16 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import type { NoteStatus } from '../notes.types';
+export type AppSection = 'tasks' | 'routine' | 'almanac';
 
-const HASH_BY_STATUS: Record<NoteStatus, string> = {
-  pending: '#pendientes',
-  done: '#realizadas',
+const HASH_BY_SECTION: Record<AppSection, string> = {
+  tasks: '#tareas',
+  routine: '#rutina',
+  almanac: '#almanaque',
 };
 
-function readStatusFromHash(): NoteStatus {
-  return window.location.hash === HASH_BY_STATUS.done ? 'done' : 'pending';
+function readSectionFromHash(): AppSection {
+  if (window.location.hash === HASH_BY_SECTION.routine) return 'routine';
+  if (window.location.hash === HASH_BY_SECTION.almanac) return 'almanac';
+  return 'tasks';
 }
 
 function subscribeToHash(onChange: () => void): () => void {
@@ -19,17 +22,17 @@ function subscribeToHash(onChange: () => void): () => void {
 
 /**
  * Las pestañas viven en el hash para que el botón Atrás de Android vuelva a
- * Pendientes en lugar de cerrar la app. Sin router: 30 líneas y 0 KB.
+ * la sección anterior en lugar de cerrar la app. Sin router ni dependencias.
  */
-export function useHashTab(): [NoteStatus, (status: NoteStatus) => void] {
-  const status = useSyncExternalStore(subscribeToHash, readStatusFromHash, readStatusFromHash);
+export function useHashTab(): [AppSection, (section: AppSection) => void] {
+  const section = useSyncExternalStore(subscribeToHash, readSectionFromHash, readSectionFromHash);
 
-  const setStatus = useCallback((next: NoteStatus) => {
-    const hash = next === 'done' ? HASH_BY_STATUS.done : HASH_BY_STATUS.pending;
+  const setSection = useCallback((next: AppSection) => {
+    const hash = HASH_BY_SECTION[next];
     if (window.location.hash !== hash) {
       window.location.hash = hash;
     }
   }, []);
 
-  return [status, setStatus];
+  return [section, setSection];
 }

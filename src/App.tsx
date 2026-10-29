@@ -2,14 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CompletionCelebration } from './components/ui/CompletionCelebration';
 import { Toaster } from './components/ui/Toaster';
 import { TrashIcon } from './components/ui/icons';
+import { AlmanacView } from './features/almanac/AlmanacView';
 import { AppHeader } from './features/notes/components/AppHeader';
+import { MainTabs } from './features/notes/components/MainTabs';
 import { NoteComposer } from './features/notes/components/NoteComposer';
-import { NoteList } from './features/notes/components/NoteList';
-import { NotesTabs } from './features/notes/components/NotesTabs';
-import { useHashTab } from './features/notes/hooks/useHashTab';
+import { TasksView } from './features/notes/components/TasksView';
+import { useHashTab, type AppSection } from './features/notes/hooks/useHashTab';
 import { useNoteMutations } from './features/notes/hooks/useNoteMutations';
 import { useNotes } from './features/notes/hooks/useNotes';
-import type { Note, NoteInput } from './features/notes/notes.types';
+import type { Note, NoteInput, NoteStatus } from './features/notes/notes.types';
+import { RoutineView } from './features/routine/RoutineView';
 import { prefersReducedMotion } from './lib/motion';
 import { scrollToTop } from './lib/scroll';
 import { showToast } from './lib/toast';
@@ -21,7 +23,10 @@ const HIGHLIGHT_MS = 900;
 const COMPLETION_CELEBRATION_MS = 850;
 
 export default function App() {
-  const [status, setStatus] = useHashTab();
+  const [section, setSection] = useHashTab();
+  const [status, setStatus] = useState<NoteStatus>(() =>
+    window.location.hash === '#realizadas' || window.location.hash === '#done' ? 'done' : 'pending',
+  );
   const pendingSnapshot = useNotes('pending');
   const doneSnapshot = useNotes('done');
   const { create, updateText, complete, remove, removeAllDone, undoRemove, undoRemoveMany } =
@@ -37,10 +42,15 @@ export default function App() {
     setShowCompletionCelebration(true);
   }, []);
 
-  // La pestaña por defecto tiene hash propio: así el Atrás siempre tiene destino.
+  // Mantiene enlaces antiguos de Pendientes/Realizadas y los normaliza al nuevo tab Tareas.
   useEffect(() => {
-    if (!window.location.hash) {
-      window.history.replaceState(null, '', '#pendientes');
+    if (
+      !window.location.hash ||
+      window.location.hash === '#pendientes' ||
+      window.location.hash === '#realizadas' ||
+      window.location.hash === '#done'
+    ) {
+      window.history.replaceState(null, '', '#tareas');
     }
   }, []);
 
@@ -79,10 +89,13 @@ export default function App() {
 
     setNewId(note.id);
     setStatus('pending');
+    setSection('tasks');
     scrollToTop(pendingPanelRef.current, prefersReducedMotion() ? 'auto' : 'smooth');
 
     return note;
   };
+
+  const handleCreateDated = (input: NoteInput) => create(input);
 
   const handleComplete = async (id: string) => {
     await complete(id);
@@ -138,9 +151,14 @@ export default function App() {
     }
   };
 
-  const handleStatusChange = (nextStatus: 'pending' | 'done') => {
+  const handleStatusChange = (nextStatus: NoteStatus) => {
     setConfirmingDeleteAll(false);
     setStatus(nextStatus);
+  };
+
+  const handleSectionChange = (nextSection: AppSection) => {
+    setConfirmingDeleteAll(false);
+    setSection(nextSection);
   };
 
   return (
@@ -148,108 +166,115 @@ export default function App() {
       <AppHeader />
 
       <div className="shrink-0 px-4 pb-3">
-        <NotesTabs
-          value={status}
-          counts={pendingSnapshot.counts ?? doneSnapshot.counts}
-          onChange={handleStatusChange}
-        />
+        <MainTabs value={section} onChange={handleSectionChange} />
       </div>
 
       <main
         ref={pendingPanelRef}
-        id="panel-pending"
+        id="panel-tasks"
         role="tabpanel"
-        aria-labelledby="tab-pending"
-        hidden={status !== 'pending'}
+        aria-labelledby="tab-tasks"
+        hidden={section !== 'tasks'}
         className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
       >
-        <div className="mx-auto w-full max-w-[500px]">
-          <NoteList
-            notes={pendingSnapshot.notes}
-            variant="pending"
-            newId={newId}
-            highlightId={highlightId}
-            onCompletionStart={handleCompletionStart}
-            onComplete={handleComplete}
-            onUpdateText={updateText}
-            onDelete={handleDelete}
-          />
-        </div>
+        <TasksView
+          status={status}
+          counts={pendingSnapshot.counts ?? doneSnapshot.counts}
+          notes={status === 'pending' ? pendingSnapshot.notes : doneSnapshot.notes}
+          newId={newId}
+          highlightId={highlightId}
+          onStatusChange={handleStatusChange}
+          onCompletionStart={handleCompletionStart}
+          onComplete={handleComplete}
+          onUpdateText={updateText}
+          onDelete={handleDelete}
+        />
+
+        {status === 'done' && doneSnapshot.notes && doneSnapshot.notes.length > 0 ? (
+          <div className="mt-4 border-t border-border/70 pt-3">
+            {confirmingDeleteAll ? (
+              <div
+                role="group"
+                aria-labelledby="delete-all-title"
+                className="rounded-control border border-border bg-surface p-3 shadow-sm"
+              >
+                <p id="delete-all-title" className="text-center text-[13px] font-medium">
+                  ¿Borrar todas las notas realizadas?
+                </p>
+                <div className="mt-3 flex justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmingDeleteAll(false);
+                    }}
+                    disabled={isDeletingAll}
+                    className="h-9 rounded-full px-4 text-[12px] font-medium text-muted transition-colors hover:bg-border/40"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleDeleteAllDone();
+                    }}
+                    disabled={isDeletingAll}
+                    className="h-9 rounded-full bg-danger px-4 text-[12px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                  >
+                    {isDeletingAll ? 'Borrando…' : 'Sí, borrar todas'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmingDeleteAll(true);
+                }}
+                className="mx-auto flex min-h-10 items-center justify-center gap-2 rounded-full px-4 text-[12px] font-medium text-muted transition-colors hover:bg-danger/10 hover:text-danger focus-visible:text-danger"
+              >
+                <TrashIcon className="size-4" />
+                Borrar todas las realizadas
+              </button>
+            )}
+          </div>
+        ) : null}
       </main>
 
       <main
-        id="panel-done"
+        id="panel-routine"
         role="tabpanel"
-        aria-labelledby="tab-done"
-        hidden={status !== 'done'}
+        aria-labelledby="tab-routine"
+        hidden={section !== 'routine'}
         className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
       >
-        <div className="mx-auto w-full max-w-[500px]">
-          <NoteList
-            notes={doneSnapshot.notes}
-            variant="done"
-            newId={newId}
-            highlightId={highlightId}
-            onCompletionStart={handleCompletionStart}
-            onComplete={handleComplete}
-            onUpdateText={updateText}
-            onDelete={handleDelete}
-          />
+        <RoutineView
+          onCreateTask={handleCreateDated}
+          onCompleteTask={handleComplete}
+          onUpdateTask={updateText}
+          onDeleteTask={handleDelete}
+          onCompletionStart={handleCompletionStart}
+        />
+      </main>
 
-          {doneSnapshot.notes && doneSnapshot.notes.length > 0 ? (
-            <div className="mt-4 border-t border-border/70 pt-3">
-              {confirmingDeleteAll ? (
-                <div
-                  role="group"
-                  aria-labelledby="delete-all-title"
-                  className="rounded-control border border-border bg-surface p-3 shadow-sm"
-                >
-                  <p id="delete-all-title" className="text-center text-[13px] font-medium">
-                    ¿Borrar todas las notas realizadas?
-                  </p>
-                  <div className="mt-3 flex justify-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setConfirmingDeleteAll(false);
-                      }}
-                      disabled={isDeletingAll}
-                      className="h-9 rounded-full px-4 text-[12px] font-medium text-muted transition-colors hover:bg-border/40"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        void handleDeleteAllDone();
-                      }}
-                      disabled={isDeletingAll}
-                      className="h-9 rounded-full bg-danger px-4 text-[12px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                    >
-                      {isDeletingAll ? 'Borrando…' : 'Sí, borrar todas'}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setConfirmingDeleteAll(true);
-                  }}
-                  className="mx-auto flex min-h-10 items-center justify-center gap-2 rounded-full px-4 text-[12px] font-medium text-muted transition-colors hover:bg-danger/10 hover:text-danger focus-visible:text-danger"
-                >
-                  <TrashIcon className="size-4" />
-                  Borrar todas las realizadas
-                </button>
-              )}
-            </div>
-          ) : null}
-        </div>
+      <main
+        id="panel-almanac"
+        role="tabpanel"
+        aria-labelledby="tab-almanac"
+        hidden={section !== 'almanac'}
+        className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
+      >
+        <AlmanacView
+          onCreateTask={handleCreateDated}
+          onCompleteTask={handleComplete}
+          onUpdateTask={updateText}
+          onDeleteTask={handleDelete}
+          onCompletionStart={handleCompletionStart}
+        />
       </main>
 
       <OfflineBanner />
       <UpdateBanner />
-      <NoteComposer onCreate={handleCreate} />
+      {section === 'tasks' ? <NoteComposer onCreate={handleCreate} /> : null}
 
       <Toaster />
       {showCompletionCelebration ? <CompletionCelebration /> : null}

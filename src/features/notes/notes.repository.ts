@@ -23,6 +23,13 @@ export class NoteNotFoundError extends Error {
   }
 }
 
+export class NoteDateValidationError extends Error {
+  constructor() {
+    super('La fecha de la nota no es válida.');
+    this.name = 'NoteDateValidationError';
+  }
+}
+
 export interface NoteCounts {
   pending: number;
   done: number;
@@ -43,6 +50,24 @@ export function normalizeNoteText(raw: string): string {
   }
 
   return text;
+}
+
+export function normalizeScheduledDate(date: string | undefined): string | undefined {
+  if (date === undefined) return undefined;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new NoteDateValidationError();
+
+  const [year, month, day] = date.split('-').map(Number);
+  if (year === undefined || year < 100) throw new NoteDateValidationError();
+  const parsed = new Date(year, (month ?? 1) - 1, day ?? 0);
+  if (
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() + 1 !== month ||
+    parsed.getDate() !== day
+  ) {
+    throw new NoteDateValidationError();
+  }
+
+  return date;
 }
 
 function assertWritable(note: Note | undefined, id: string): Note {
@@ -86,6 +111,13 @@ export function createNotesRepository(table: Table<Note, string>) {
         .toArray();
     },
 
+    listScheduledBetween(startDate: string, endDate: string): Promise<Note[]> {
+      return table
+        .where('[deleted+scheduledDate+createdAt]')
+        .between([0, startDate, 0], [0, endDate, RANGE_END], true, true)
+        .toArray();
+    },
+
     async countByStatus(): Promise<NoteCounts> {
       const [pending, done] = await Promise.all([countBy('pending'), countBy('done')]);
       return { pending, done };
@@ -93,6 +125,7 @@ export function createNotesRepository(table: Table<Note, string>) {
 
     async create(input: NoteInput): Promise<Note> {
       const text = normalizeNoteText(input.text);
+      const scheduledDate = normalizeScheduledDate(input.scheduledDate);
       const now = Date.now();
       const note: Note = {
         id: createId(),
@@ -102,6 +135,7 @@ export function createNotesRepository(table: Table<Note, string>) {
         updatedAt: now,
         completedAt: 0,
         deleted: 0,
+        ...(scheduledDate ? { scheduledDate } : {}),
       };
 
       await table.add(note);
@@ -113,12 +147,22 @@ export function createNotesRepository(table: Table<Note, string>) {
 
       return await table.db.transaction('rw', table, async () => {
         const current = assertWritable(await table.get(id), id);
+        const scheduledDate =
+          patch.scheduledDate === undefined
+            ? current.scheduledDate
+            : normalizeScheduledDate(patch.scheduledDate);
 
-        if (current.text === text) {
+        if (current.text === text && current.scheduledDate === scheduledDate) {
           return current;
         }
 
-        const next: Note = { ...current, text, updatedAt: Date.now() };
+        const next: Note = {
+          ...current,
+          text,
+          updatedAt: Date.now(),
+          ...(scheduledDate ? { scheduledDate } : {}),
+        };
+        if (scheduledDate === undefined) delete next.scheduledDate;
         await table.put(next);
         return next;
       });

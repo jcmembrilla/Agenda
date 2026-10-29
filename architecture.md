@@ -2,16 +2,32 @@
 
 PWA offline-first minimalista hecha con React + Vite + Tailwind + Dexie.
 
-## Uno a uno
+## Producto actual
 
-- **Home** = compositore de notas; cada nota es un bloque de texto.
+- La navegación principal contiene solo **Tareas, Rutina y Almanaque**; no se agrega una sección separada de Trabajo.
+- **Tareas** conserva las notas rápidas y las vistas Pendientes/Realizadas. El composer general aparece solo allí.
+- **Rutina** permite definir actividades recurrentes por días de lunes a domingo. El cumplimiento se guarda por fecha, sin alterar la repetición futura. Cada día también admite tareas puntuales.
+- **Almanaque** muestra los doce meses del año, permite seleccionar una fecha y crear/revisar sus tareas.
+- Una tarea fechada es el mismo registro en Rutina y Almanaque, no una copia. Las fechas son `YYYY-MM-DD` locales para evitar desplazamientos por zonas horarias.
+- De `Mi-Escuela` se toma solo el patrón de navegación y selección de fechas; no se copian contenidos escolares ni funciones específicas.
+
+## Persistencia del calendario
+
+- Dexie v2 añade `scheduledDate` al índice de notas y crea los almacenes `routines` y `routineOccurrences`.
+- Una rutina almacena su texto y días de semana (`0 = lunes` … `6 = domingo`); cada cumplimiento usa una clave determinista `routineId:YYYY-MM-DD`.
+- Marcar/desmarcar una ocurrencia no cambia la rutina base. Al eliminar una rutina se eliminan también sus ocurrencias.
+- Las tareas fechadas siguen el ciclo de vida habitual de las notas, incluido completado y borrado lógico; ambos calendarios consultan el mismo registro.
+
+## Comportamiento
+
+- **Tareas** = composer de notas; cada nota es un bloque de texto.
 - **Completar** mueve la nota a la pestaña _Realizadas_ con animación de check (no borra).
 - Las notas completadas **no se reabren** — solo se pueden borrar y quedan en _Realizadas_ hasta que se eliminan.
 - Máx. **100 caracteres** por nota; los bloques se limitan a **máx. 2 líneas**; siguiente nota abajo.
 - El compositore está **fijo en la parte inferior**.
 - Estilo: **papel cálido + teal**: `#FAF9F7` / `#0D9488`.
 - PWA ligera: `registerType: 'prompt'` + `injectRegister: null`; SW desactivada en dev.
-- Sin router: tabs via `location.hash` (`#pendientes` / `#realizadas`) para el botón Atrás de Android.
+- Sin router: las áreas principales usan `location.hash` (`#tareas`, `#rutina`, `#almanaque`) para el botón Atrás de Android. Los hashes antiguos se normalizan a Tareas.
 - Íconos generados por script propio (sin dependencias).
 
 ## Pila tecnológica (bloqueado)
@@ -36,7 +52,7 @@ PWA offline-first minimalista hecha con React + Vite + Tailwind + Dexie.
 - **Sin librerías de animación**: keyframes puras CSS; strike-through animado vía `text-decoration-color` transition.
 - **Colapso por grid**: `grid-template-rows: 1fr → 0fr` sin medir altura.
 - **Iconos**: generados por `scripts/generate-icons.mjs` (script PNG a mano, supersampling 4×4).
-- **Sin router**: 30 líneas, 0 KB; hash `#pendientes` / `#realizadas` para Android Back.
+- **Sin router**: hash de tres áreas para Android Back; Pendientes/Realizadas quedan como pestañas internas de Tareas.
 - **Reducida**: `prefers-reduced-motion` salta animación y persiste al instante.
 
 ## Dirección de producto y diseño
@@ -53,7 +69,7 @@ PWA offline-first minimalista hecha con React + Vite + Tailwind + Dexie.
 
 ## Alcance actual y siguientes pasos
 
-- El calendario, la preferencia de tema persistida, Cmd/Ctrl+Enter, la detección de duplicados, el despliegue y la sincronización son funcionalidades pendientes o futuras; no deben adelantarse sin definir su comportamiento.
+- La preferencia de tema persistida, Cmd/Ctrl+Enter, la detección de duplicados, el despliegue y la sincronización son funcionalidades pendientes o futuras; no deben adelantarse sin definir su comportamiento.
 - El service worker ya se genera con Workbox: precarga los archivos de build y usa `index.html` como fallback de navegación. Revisar la estrategia de caché al incorporar APIs o recursos externos.
 - Proceder por incrementos pequeños: acordar primero el comportamiento de cada funcionalidad, implementarla con pruebas de repositorio e interfaz, validar accesibilidad y diseño responsive, y después desplegar.
 
@@ -78,15 +94,16 @@ src/
   styles/       # tokens, keyframes, dark override
   features/
     notes/
-      types.ts   # Note, NoteInput, NoteStatus, NoteCounts
-      repository.ts # createNotesRepository, normalizeNoteText, complete, softDelete, restore
+      notes.types.ts
+      notes.repository.ts # notas rápidas y tareas fechadas
       hooks/     # useNotes, useNoteMutations, useCompleteAnimation, useHashTab
       components/
-        NoteBlock.tsx     # pending/done rendering, inline edit, delete, animation container
-        NoteComposer.tsx  # bottom composer, 100-char limit, autosize
-        CheckButton.tsx   # 28px circle dentro de 44px hit area
-        NoteList.tsx
-        NotesTabs.tsx
+        MainTabs.tsx, TasksView.tsx, DatedNotes.tsx
+    routine/
+      routines.repository.ts # recurrencias y ocurrencias diarias
+      RoutineView.tsx
+    almanac/
+      AlmanacView.tsx
   components/  # ui/ (IconButton, Toaster, EmptyState, EmptyState, CheckButton, TrashIcon)
   pwa/         # OfflineBanner, UpdateBanner
   App.tsx      # shell, hash tab, undo toast flow
@@ -97,13 +114,12 @@ src/
 
 - `useCompleteAnimation(onComplete)`: máquina `idle → completing → commit`. El commit se ejecuta **después** de la animación (ADR-05).
 - `useNotes(status)`: proyección reactiva; devuelve `{notes, counts}`.
-- `useHashTab()`: `[status, setStatus]` desde `location.hash`.
+- `useHashTab()`: `[section, setSection]` desde `location.hash`; Pendientes/Realizadas son estado interno de Tareas.
 - `scrollToTop(element, behavior)`: tolerant al `scrollTo` que falta en jsdom.
 - `showToast({message, action, duration})`: toast con acción "Deshacer" (5 s).
 
-## Tickets pendientes (Sprint 3)
+## Siguientes mejoras (no bloquean el alcance actual)
 
-- [ ] Añadir almanaque calendario (tareas por día).
 - [ ] Persistencia de preferencias de tema.
 - [ ] Tests de integración con `userEvent` completos.
 - [ ] Deploy a Netlify/Vercel con compresión gzip.

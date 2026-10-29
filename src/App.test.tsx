@@ -7,6 +7,8 @@ import { db } from './lib/db';
 
 beforeEach(async () => {
   await db.notes.clear();
+  await db.routines.clear();
+  await db.routineOccurrences.clear();
   window.history.replaceState(null, '', '/');
 });
 
@@ -59,9 +61,21 @@ describe('App', () => {
     });
   });
 
-  it('arranca en Pendientes con el composer y las dos pestañas', async () => {
+  it('arranca en Tareas y conserva el selector Pendientes/Realizadas', async () => {
     render(<App />);
 
+    expect(screen.getByRole('tab', { name: 'Tareas' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Rutina' })).toHaveAttribute(
+      'aria-controls',
+      'panel-routine',
+    );
+    expect(screen.getByRole('tab', { name: 'Almanaque' })).toHaveAttribute(
+      'aria-controls',
+      'panel-almanac',
+    );
+    expect(document.getElementById('panel-tasks')).toBeVisible();
+    expect(document.getElementById('panel-routine')).not.toBeVisible();
+    expect(document.getElementById('panel-almanac')).not.toBeVisible();
     expect(screen.getByRole('tab', { name: /pendientes/i })).toHaveAttribute(
       'aria-selected',
       'true',
@@ -78,6 +92,58 @@ describe('App', () => {
     );
     expect(screen.getByLabelText('Nueva nota')).toBeInTheDocument();
     expect(await screen.findByText('Nada pendiente')).toBeInTheDocument();
+  });
+
+  it('cambia a Rutina y Almanaque sin abandonar Tareas', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('tab', { name: 'Rutina' }));
+    expect(document.getElementById('panel-routine')).toBeVisible();
+    expect(screen.getByText('Tu semana')).toBeInTheDocument();
+
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('tab', { name: 'Almanaque' })).toHaveAttribute('aria-selected', 'true');
+    expect(document.getElementById('panel-almanac')).toBeVisible();
+
+    await user.click(screen.getByRole('tab', { name: 'Rutina' }));
+    expect(document.getElementById('panel-routine')).toBeVisible();
+
+    await user.click(screen.getByRole('tab', { name: 'Almanaque' }));
+    expect(document.getElementById('panel-almanac')).toBeVisible();
+    expect(screen.getByText('Tus planes en el año.')).toBeInTheDocument();
+  });
+
+  it('crea una rutina y registra su cumplimiento para el día', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('tab', { name: 'Rutina' }));
+    await user.click(screen.getByRole('button', { name: '+ Agregar rutina semanal' }));
+    await user.type(screen.getByLabelText('Actividad que se repite'), 'Gimnasio');
+    await user.click(screen.getByRole('button', { name: 'Guardar rutina' }));
+
+    const toggle = await screen.findByRole('button', {
+      name: 'Marcar Gimnasio como realizada',
+    });
+    await user.click(toggle);
+
+    await waitFor(() => {
+      expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    });
+  });
+
+  it('agrega una tarea fechada desde el Almanaque', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('tab', { name: 'Almanaque' }));
+    await user.click(screen.getByRole('button', { name: '+ Agregar' }));
+    await user.type(screen.getByLabelText('Nueva tarea para este día'), 'Pagar alquiler');
+    await user.click(screen.getByRole('button', { name: 'Agregar tarea al día' }));
+
+    expect(screen.getByRole('button', { name: 'Pagar alquiler' })).toBeVisible();
+    expect(screen.queryByLabelText('Nueva nota')).not.toBeInTheDocument();
   });
 
   it('crea una nota desde el composer y la muestra como bloque', async () => {
