@@ -26,8 +26,10 @@
 - [x] Panel Realizadas sin tachado persistente; contenido y navegación centrados
 - [x] Workbox precarga assets del build y usa `index.html` como fallback de navegación
 - [x] Nombre de producto Simple Agenda y botón/guía de instalación PWA
-- [x] 24 tests Vitest pasando (typecheck 0, lint 0, build 0)
-- [x] `pnpm build` → 109.58 kB gzip JS, 5.70 kB gzip CSS
+- [x] Completar pendientes arrastrando a la derecha y animación verde de confirmación a pantalla completa
+- [x] Completar pendientes arrastrando a la derecha y animación verde de confirmación a pantalla completa
+- [x] 27 tests Vitest pasando (typecheck 0, lint 0, build 0)
+- [x] `pnpm build` → 110.32 kB gzip JS, 6.28 kB gzip CSS
 - [x] Capturas visuales (Edge headless 390×844): light/dark, pendientes/realizadas, animation frames, geometría (check 44px, gap 7px, sin clipping)
 
 ## Pendientes (Sprint 3)

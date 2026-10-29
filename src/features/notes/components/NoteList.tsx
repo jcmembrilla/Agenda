@@ -8,6 +8,7 @@ interface NoteListProps {
   variant: NoteStatus;
   newId: string | null;
   highlightId: string | null;
+  onCompletionStart: () => void;
   onComplete: NoteBlockProps['onComplete'];
   onUpdateText: NoteBlockProps['onUpdateText'];
   onDelete: NoteBlockProps['onDelete'];
@@ -29,6 +30,7 @@ export function NoteList({
   variant,
   newId,
   highlightId,
+  onCompletionStart,
   onComplete,
   onUpdateText,
   onDelete,
@@ -51,6 +53,7 @@ export function NoteList({
           variant={variant}
           isNew={note.id === newId}
           isHighlighted={note.id === highlightId}
+          onCompletionStart={onCompletionStart}
           onComplete={onComplete}
           onUpdateText={onUpdateText}
           onDelete={onDelete}

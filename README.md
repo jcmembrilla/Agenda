@@ -8,6 +8,7 @@ Un bloc de notas simple donde anotar pendientes y marcarlas como realizadas con 
 
 - **Componer** notas desde la parte inferior; cada nota es un bloque de texto.
 - **Completar** → mueve la nota a _Realizadas_ con animación de check y colapso; el texto no queda tachado.
+- **Deslizar hacia la derecha** en una pendiente (móvil o escritorio) para completarla; una barrida verde a pantalla completa muestra el check antes de guardarla. El botón con flecha también permite completarla con clic o teclado.
 - **No se pueden reabrir** las completadas — solo borrar, y quedan en _Realizadas_ hasta que se eliminan.
 - Límite **100 caracteres** por nota; los bloques se limitan a **máx. 2 líneas**; siguiente nota debajo.
 - El compositore está **fijo en la parte inferior**.
@@ -94,10 +95,10 @@ pnpm typecheck   # 0 errores
 pnpm lint        # 0 errores
 
 # Test
-pnpm test        # 24/24 passing
+pnpm test        # 27/27 passing
 
 # Build
-pnpm build       # 0; 109.58 kB gzip JS, 5.70 kB gzip CSS
+pnpm build       # 0; 110.32 kB gzip JS, 6.28 kB gzip CSS
 
 # Íconos
 pnpm icons       # genera public/icons/

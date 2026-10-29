@@ -48,6 +48,7 @@ PWA offline-first minimalista hecha con React + Vite + Tailwind + Dexie.
 - Centrar el conjunto en pantallas amplias, con encabezado y navegación centrados y una columna de contenido acotada; conservar la alineación izquierda del texto de las notas para facilitar su lectura.
 - Usar iconos SVG lineales coherentes, etiquetas accesibles y controles táctiles claros. Evitar sumar una biblioteca de iconos o animaciones para elementos puntuales.
 - Una nota realizada se distingue por su pestaña y su marca de verificación, **no por texto tachado persistente**. El tachado puede aparecer solo durante la animación de completado.
+- Completar una nota pendiente debe aceptar un deslizamiento horizontal hacia la derecha con touch, mouse o lápiz; el affordance visible es una flecha hacia la derecha. Al completar, una barrida verde a pantalla completa con un check central confirma la acción, y el guardado ocurre después de la animación.
 - Las acciones destructivas masivas requieren confirmación; conservar el borrado individual y ofrecer Deshacer cuando la operación lo permita.
 
 ## Alcance actual y siguientes pasos

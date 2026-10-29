@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { CompletionCelebration } from './components/ui/CompletionCelebration';
 import { Toaster } from './components/ui/Toaster';
 import { TrashIcon } from './components/ui/icons';
 import { AppHeader } from './features/notes/components/AppHeader';
@@ -17,6 +18,7 @@ import { UpdateBanner } from './pwa/UpdateBanner';
 
 const ENTER_ANIMATION_MS = 400;
 const HIGHLIGHT_MS = 900;
+const COMPLETION_CELEBRATION_MS = 850;
 
 export default function App() {
   const [status, setStatus] = useHashTab();
@@ -27,9 +29,13 @@ export default function App() {
 
   const [newId, setNewId] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
   const [confirmingDeleteAll, setConfirmingDeleteAll] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const pendingPanelRef = useRef<HTMLElement>(null);
+  const handleCompletionStart = useCallback(() => {
+    setShowCompletionCelebration(true);
+  }, []);
 
   // La pestaña por defecto tiene hash propio: así el Atrás siempre tiene destino.
   useEffect(() => {
@@ -57,6 +63,16 @@ export default function App() {
       window.clearTimeout(timer);
     };
   }, [highlightId]);
+
+  useEffect(() => {
+    if (!showCompletionCelebration) return;
+    const timer = window.setTimeout(() => {
+      setShowCompletionCelebration(false);
+    }, COMPLETION_CELEBRATION_MS);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [showCompletionCelebration]);
 
   const handleCreate = async (input: NoteInput) => {
     const note = await create(input);
@@ -153,6 +169,7 @@ export default function App() {
             variant="pending"
             newId={newId}
             highlightId={highlightId}
+            onCompletionStart={handleCompletionStart}
             onComplete={handleComplete}
             onUpdateText={updateText}
             onDelete={handleDelete}
@@ -173,6 +190,7 @@ export default function App() {
             variant="done"
             newId={newId}
             highlightId={highlightId}
+            onCompletionStart={handleCompletionStart}
             onComplete={handleComplete}
             onUpdateText={updateText}
             onDelete={handleDelete}
@@ -234,6 +252,7 @@ export default function App() {
       <NoteComposer onCreate={handleCreate} />
 
       <Toaster />
+      {showCompletionCelebration ? <CompletionCelebration /> : null}
     </div>
   );
 }

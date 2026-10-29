@@ -25,6 +25,7 @@ export interface CompletionAnimation<E extends HTMLElement = HTMLElement> {
  */
 export function useCompleteAnimation<E extends HTMLElement = HTMLElement>(
   onComplete: () => Promise<unknown>,
+  onStart?: () => void,
 ): CompletionAnimation<E> {
   const [phase, setPhase] = useState<CompletionPhase>('idle');
   const guard = useRef(false);
@@ -34,8 +35,13 @@ export function useCompleteAnimation<E extends HTMLElement = HTMLElement>(
     if (guard.current) return;
     guard.current = true;
 
+    const reducedMotion = prefersReducedMotion();
+    if (!reducedMotion) {
+      onStart?.();
+    }
+
     // Sin animación no hay nada que esperar: se persiste y listo.
-    if (prefersReducedMotion()) {
+    if (reducedMotion) {
       try {
         await onComplete();
       } finally {
@@ -57,7 +63,7 @@ export function useCompleteAnimation<E extends HTMLElement = HTMLElement>(
     } finally {
       guard.current = false;
     }
-  }, [onComplete]);
+  }, [onComplete, onStart]);
 
   return { phase, containerRef, complete, isCompleting: phase === 'completing' };
 }

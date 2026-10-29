@@ -1,5 +1,6 @@
 import { cn } from '../../../lib/cn';
 import type { CompletionPhase } from '../hooks/useCompleteAnimation';
+import { ArrowRightIcon } from '../../../components/ui/icons';
 
 interface CheckButtonProps {
   phase: CompletionPhase;
@@ -29,23 +30,33 @@ export function CheckButton({ phase, onPress }: CheckButtonProps) {
       <span
         className={cn(
           'note-check grid size-7 place-items-center rounded-full',
-          'border-[1.5px] border-border text-canvas',
-          'hover:border-muted/60',
+          'border-[1.5px] border-border text-muted transition-colors',
+          'group-hover:border-accent/50 group-hover:text-accent',
         )}
       >
-        <svg viewBox="0 0 24 24" fill="none" className="size-4" aria-hidden="true" focusable="false">
-          <path
-            className="note-check-path"
-            d="M6.5 12.5 10.5 16.5 17.5 8.5"
-            pathLength={1}
-            stroke="currentColor"
-            strokeWidth={3}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeDasharray={1}
-            strokeDashoffset={1}
-          />
-        </svg>
+        {isCompleting ? (
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            className="size-4 text-canvas"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              className="note-check-path"
+              d="M6.5 12.5 10.5 16.5 17.5 8.5"
+              pathLength={1}
+              stroke="currentColor"
+              strokeWidth={3}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray={1}
+              strokeDashoffset={1}
+            />
+          </svg>
+        ) : (
+          <ArrowRightIcon className="size-4" />
+        )}
       </span>
     </button>
   );

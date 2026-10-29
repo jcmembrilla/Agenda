@@ -130,4 +130,22 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Deshacer' }));
     expect(await screen.findByText('nota realizada')).toBeVisible();
   });
+
+  it('muestra la celebración a pantalla completa al completar una nota', async () => {
+    await db.notes.add({
+      id: 'pending-note',
+      text: 'marcar como realizada',
+      status: 'pending',
+      createdAt: 1,
+      updatedAt: 1,
+      completedAt: 0,
+      deleted: 0,
+    });
+
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByRole('button', { name: 'Marcar como realizada' }));
+
+    expect(screen.getByRole('status', { name: 'Nota realizada' })).toBeInTheDocument();
+  });
 });
