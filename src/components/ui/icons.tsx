@@ -39,6 +39,32 @@ export function CheckSmallIcon(props: IconProps) {
   );
 }
 
+export function NoteIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M7 3.75h7.5L19 8.25v11A1.75 1.75 0 0 1 17.25 21h-10A1.75 1.75 0 0 1 5.5 19.25v-13A2.5 2.5 0 0 1 8 3.75Z" />
+      <path d="M14 4v5h5M8.5 13h7M8.5 16.5h7" />
+    </Icon>
+  );
+}
+
+export function InstallIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3.75v11.5M7.5 10.75 12 15.25l4.5-4.5" />
+      <path d="M5 16v2.25A1.75 1.75 0 0 0 6.75 20h10.5A1.75 1.75 0 0 0 19 18.25V16" />
+    </Icon>
+  );
+}
+
+export function CloseIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m6 6 12 12M18 6 6 18" />
+    </Icon>
+  );
+}
+
 export function ArrowUpIcon(props: IconProps) {
   return (
     <Icon strokeWidth={2.2} {...props}>

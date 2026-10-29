@@ -103,6 +103,25 @@ describe('notesRepository', () => {
     expect(await repository.listPending()).toHaveLength(1);
   });
 
+  it('elimina en lote las realizadas y permite deshacer el lote', async () => {
+    const first = await repository.create({ text: 'primera realizada' });
+    const second = await repository.create({ text: 'segunda realizada' });
+    const pending = await repository.create({ text: 'sigue pendiente' });
+    await repository.complete(first.id);
+    await repository.complete(second.id);
+
+    const deletedIds = await repository.softDeleteDone();
+
+    expect(new Set(deletedIds)).toEqual(new Set([first.id, second.id]));
+    expect(await repository.listDone()).toHaveLength(0);
+    expect((await repository.listPending()).map((note) => note.id)).toEqual([pending.id]);
+
+    await repository.restoreMany(deletedIds);
+
+    expect((await repository.listDone()).map((note) => note.id)).toHaveLength(2);
+    expect((await repository.listPending()).map((note) => note.id)).toEqual([pending.id]);
+  });
+
   it('restaurar una nota que no existe falla de forma explícita', async () => {
     await expect(repository.restore('inexistente')).rejects.toBeInstanceOf(NoteNotFoundError);
   });

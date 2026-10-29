@@ -13,6 +13,7 @@
   --color-accent: #0d9488;
   --color-accent-soft: #f0fdfa;
   --color-success: #059669;
+  --color-danger: #dc2626;
 
   --radius-block: 16px;
   --radius-control: 12px;
@@ -35,6 +36,7 @@
     --color-accent: #2dd4bf;
     --color-accent-soft: #042f2e;
     --color-success: #34d399;
+    --color-danger: #f87171;
   }
 }
 
@@ -139,17 +141,11 @@
   grid-template-rows: 1fr;
 }
 
-/* El tachado existe siempre pero transparente: al completar solo cambia el
-   color, así no hay salto de layout y funciona en textos de una o dos líneas. */
+/* El tachado solo aparece durante la animación de completar. */
 .note-text {
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
   text-decoration-color: transparent;
-}
-
-/* Estado persistido de una nota ya realizada. */
-.note-text--done {
-  text-decoration-color: color-mix(in oklab, var(--color-muted) 80%, transparent);
 }
 
 /* El contenido se desvanece al llegar al composer, sin líneas duras. */

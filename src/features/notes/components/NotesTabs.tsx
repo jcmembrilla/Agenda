@@ -39,8 +39,8 @@ export function NotesTabs({ value, counts, onChange }: NotesTabsProps) {
   return (
     <div
       role="tablist"
-      aria-label="Secciones del anotador"
-      className="inline-flex gap-1 rounded-full border border-border bg-surface p-1"
+      aria-label="Secciones de Simple Agenda"
+      className="mx-auto inline-flex gap-1 rounded-full border border-border bg-surface p-1 shadow-sm"
     >
       {TABS.map((tab, index) => {
         const isSelected = tab.status === value;

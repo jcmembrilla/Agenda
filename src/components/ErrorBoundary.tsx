@@ -16,7 +16,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo): void {
-    console.error('[anotador] error de render', error, info.componentStack);
+    console.error('[Simple Agenda] error de render', error, info.componentStack);
   }
 
   override render(): ReactNode {

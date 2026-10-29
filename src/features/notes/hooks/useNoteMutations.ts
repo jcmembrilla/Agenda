@@ -7,7 +7,9 @@ export interface NoteMutations {
   updateText: (id: string, text: string) => Promise<Note>;
   complete: (id: string) => Promise<Note>;
   remove: (id: string) => Promise<void>;
+  removeAllDone: () => Promise<string[]>;
   undoRemove: (id: string) => Promise<void>;
+  undoRemoveMany: (ids: string[]) => Promise<void>;
 }
 
 /**
@@ -21,7 +23,9 @@ export function useNoteMutations(): NoteMutations {
       updateText: (id, text) => notesRepository.updateText(id, { text }),
       complete: (id) => notesRepository.complete(id),
       remove: (id) => notesRepository.softDelete(id),
+      removeAllDone: () => notesRepository.softDeleteDone(),
       undoRemove: (id) => notesRepository.restore(id),
+      undoRemoveMany: (ids) => notesRepository.restoreMany(ids),
     }),
     [],
   );

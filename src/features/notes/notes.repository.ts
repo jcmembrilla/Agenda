@@ -153,6 +153,34 @@ export function createNotesRepository(table: Table<Note, string>) {
       });
     },
 
+    softDeleteDone(): Promise<string[]> {
+      return table.db.transaction('rw', table, async () => {
+        const doneNotes = await table
+          .where('[deleted+status+completedAt]')
+          .between([0, 'done', 0], [0, 'done', RANGE_END], true, true)
+          .toArray();
+        const now = Date.now();
+
+        await table.bulkPut(
+          doneNotes.map((note) => ({ ...note, deleted: 1 as const, updatedAt: now })),
+        );
+
+        return doneNotes.map((note) => note.id);
+      });
+    },
+
+    restoreMany(ids: string[]): Promise<void> {
+      return table.db.transaction('rw', table, async () => {
+        const notes = await table.bulkGet(ids);
+        const now = Date.now();
+        const notesToRestore = notes.filter((note): note is Note => note?.deleted === 1);
+
+        await table.bulkPut(
+          notesToRestore.map((note) => ({ ...note, deleted: 0 as const, updatedAt: now })),
+        );
+      });
+    },
+
     restore(id: string): Promise<void> {
       return table.db.transaction('rw', table, async () => {
         const current = await table.get(id);

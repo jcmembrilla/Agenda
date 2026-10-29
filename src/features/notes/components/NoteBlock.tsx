@@ -111,8 +111,7 @@ export function NoteBlock({
           >
             <span
               className={cn(
-                'note-text note-text--done text-[15px] whitespace-pre-wrap text-muted [overflow-wrap:anywhere]',
-                'leading-[1.45]',
+                'text-[15px] leading-[1.45] whitespace-pre-wrap text-ink [overflow-wrap:anywhere]',
                 !isExpanded && 'line-clamp-2',
               )}
             >

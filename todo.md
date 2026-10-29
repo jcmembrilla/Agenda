@@ -1,4 +1,4 @@
-# TODO · Anotador
+# TODO · Simple Agenda
 
 ## Hecho (Sprint 0‑2)
 
@@ -21,8 +21,13 @@
 - [x] `OfflineBanner` + `UpdateBanner` PWA
 - [x] `Toaster` con acción “Deshacer” (5 s, undo toast)
 - [x] `scrollToTop` tolerant a jsdom
-- [x] 19 tests Vitest pasando (typecheck 0, lint 0, build 0)
-- [x] `pnpm build` → 107.89 kB gzip JS, 5.17 kB gzip CSS
+- [x] Paneles de pestañas persistentes con asociación ARIA correcta
+- [x] Borrado masivo de realizadas con confirmación y acción “Deshacer”
+- [x] Panel Realizadas sin tachado persistente; contenido y navegación centrados
+- [x] Workbox precarga assets del build y usa `index.html` como fallback de navegación
+- [x] Nombre de producto Simple Agenda y botón/guía de instalación PWA
+- [x] 24 tests Vitest pasando (typecheck 0, lint 0, build 0)
+- [x] `pnpm build` → 109.58 kB gzip JS, 5.70 kB gzip CSS
 - [x] Capturas visuales (Edge headless 390×844): light/dark, pendientes/realizadas, animation frames, geometría (check 44px, gap 7px, sin clipping)
 
 ## Pendientes (Sprint 3)
@@ -31,12 +36,11 @@
 - [ ] **Preferencias de tema**: forzar claro/oscuro persistido.
 - [ ] Tests de integración E2E con `userEvent` completos (crear, editar, completar, borrar, undo).
 - [ ] Deploy a Netlify/Vercel con headers de compresión gzip/brotli.
-- [ ] Configurar `workbox-build` para runtime caching de assets y fallback page.
-- [ ] Añadir atajos de teclado (Cmd/Ctrl + Enter para guardar, Escape para cancelar).
+- [ ] Añadir atajo Cmd/Ctrl + Enter para guardar (Escape ya cancela la edición).
 - [ ] Validación de duplicados por texto idéntico.
 
 ## En el roadmap (fuera de este proyecto)
 
 - [ ] Sincronización entre dispositivos (Firebase/Supabase).
 - [ ] Export/Import JSON de notas.
-- ] Widget home / atajo rápido.
+- [ ] Widget home / atajo rápido.

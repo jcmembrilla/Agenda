@@ -49,7 +49,7 @@ export function NoteComposer({ onCreate }: NoteComposerProps) {
   };
 
   return (
-    <div className="shrink-0 px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-1">
+    <div className="w-full max-w-[500px] shrink-0 self-center px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-1">
       <form
         onSubmit={(event) => {
           event.preventDefault();

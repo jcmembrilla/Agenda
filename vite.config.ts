@@ -12,9 +12,9 @@ export default defineConfig({
       injectRegister: null,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Anotador',
-        short_name: 'Anotador',
-        description: 'Anotá, tachá y listo.',
+        name: 'Simple Agenda',
+        short_name: 'Simple Agenda',
+        description: 'Una agenda simple para tus pendientes.',
         lang: 'es-AR',
         dir: 'ltr',
         start_url: '/',

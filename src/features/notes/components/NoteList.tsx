@@ -20,7 +20,7 @@ const EMPTY_COPY: Record<NoteStatus, { title: string; description: string }> = {
   },
   done: {
     title: 'Todavía no completaste nada',
-    description: 'Cuando taches una nota va a quedar acá, con su check.',
+    description: 'Cuando marques una nota como realizada, va a quedar acá con su check.',
   },
 };
 
