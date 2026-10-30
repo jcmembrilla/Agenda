@@ -40,7 +40,7 @@ export function MainTabs({ value, onChange }: MainTabsProps) {
     <div
       role="tablist"
       aria-label="Áreas principales"
-      className="mx-auto flex w-full max-w-[340px] gap-0.5 rounded-full border border-border bg-surface p-1 shadow-sm sm:gap-1"
+      className="flex w-full gap-1 border-y border-border/70 bg-surface px-4 py-2"
     >
       {TABS.map(({ value: tab, label, Icon }, index) => (
         <button
@@ -57,8 +57,14 @@ export function MainTabs({ value, onChange }: MainTabsProps) {
           onClick={() => onChange(tab)}
           onKeyDown={(event) => handleKeyDown(event, index)}
           className={cn(
-            'flex h-9 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full px-1.5 text-[12px] font-semibold transition-colors sm:gap-1.5 sm:px-3.5 sm:text-[13px]',
-            value === tab ? 'bg-accent-soft text-accent' : 'text-muted hover:text-ink',
+            'flex h-10 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-control px-1.5 text-[12px] font-semibold transition-colors sm:gap-1.5 sm:px-3.5 sm:text-[13px]',
+            value !== tab && 'text-muted hover:bg-canvas hover:text-ink',
+            value === tab &&
+              (tab === 'tasks'
+                ? 'bg-accent-soft text-accent'
+                : tab === 'routine'
+                  ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300'
+                  : 'bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300'),
           )}
         >
           <Icon className="size-3.5 shrink-0 sm:size-4" />

@@ -165,7 +165,7 @@ export default function App() {
     <div className="mx-auto flex h-dvh w-full max-w-[560px] flex-col overflow-hidden bg-canvas">
       <AppHeader />
 
-      <div className="shrink-0 px-4 pb-3">
+      <div className="shrink-0 pb-3">
         <MainTabs value={section} onChange={handleSectionChange} />
       </div>
 
@@ -175,6 +175,7 @@ export default function App() {
         role="tabpanel"
         aria-labelledby="tab-tasks"
         hidden={section !== 'tasks'}
+        data-section="tasks"
         className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
       >
         <TasksView
@@ -245,15 +246,10 @@ export default function App() {
         role="tabpanel"
         aria-labelledby="tab-routine"
         hidden={section !== 'routine'}
+        data-section="routine"
         className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
       >
-        <RoutineView
-          onCreateTask={handleCreateDated}
-          onCompleteTask={handleComplete}
-          onUpdateTask={updateText}
-          onDeleteTask={handleDelete}
-          onCompletionStart={handleCompletionStart}
-        />
+        <RoutineView />
       </main>
 
       <main
@@ -261,6 +257,7 @@ export default function App() {
         role="tabpanel"
         aria-labelledby="tab-almanac"
         hidden={section !== 'almanac'}
+        data-section="almanac"
         className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
       >
         <AlmanacView

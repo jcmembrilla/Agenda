@@ -38,6 +38,29 @@
     --color-success: #34d399;
     --color-danger: #f87171;
   }
+
+}
+
+[data-section='routine'] {
+  --color-accent: #0891b2;
+  --color-accent-soft: #ecfeff;
+}
+
+[data-section='almanac'] {
+  --color-accent: #7c3aed;
+  --color-accent-soft: #f5f3ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-section='routine'] {
+    --color-accent: #67e8f9;
+    --color-accent-soft: #164e63;
+  }
+
+  [data-section='almanac'] {
+    --color-accent: #c4b5fd;
+    --color-accent-soft: #4c1d95;
+  }
 }
 
 @layer base {

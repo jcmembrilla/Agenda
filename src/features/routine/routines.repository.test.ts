@@ -36,6 +36,21 @@ describe('routinesRepository', () => {
     expect(() => normalizeWeekdays([7])).toThrow(RoutineValidationError);
   });
 
+  it('actualiza el texto y los días de una rutina existente', async () => {
+    const routine = await repository.create({ text: 'Leer', weekdays: [0] });
+
+    const updated = await repository.update(routine.id, {
+      text: 'Leer y escribir',
+      weekdays: [1, 3],
+    });
+
+    expect(updated.text).toBe('Leer y escribir');
+    expect(updated.weekdays).toEqual([1, 3]);
+    expect(updated.createdAt).toBe(routine.createdAt);
+    expect(updated.updatedAt).toBeGreaterThanOrEqual(routine.updatedAt);
+    expect(await repository.list()).toEqual([updated]);
+  });
+
   it('marca y desmarca una ocurrencia sin cambiar la rutina semanal', async () => {
     const routine = await repository.create({ text: 'Leer', weekdays: [0, 2] });
 

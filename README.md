@@ -2,12 +2,12 @@
 
 Una agenda PWA offline-first minimalista hecha con React + Vite + Tailwind + Dexie.
 
-Una agenda personal con tres áreas: **Tareas**, **Rutina** y **Almanaque**. Las notas rápidas conservan Pendientes/Realizadas; las rutinas se repiten en días elegidos y las tareas fechadas se muestran tanto en la semana como en el almanaque, sin duplicar registros. No hay una sección separada de Trabajo.
+Una agenda personal con tres áreas: **Tareas**, **Rutina** y **Almanaque**. Las notas rápidas conservan Pendientes/Realizadas; las rutinas son actividades fijas asociadas a los días elegidos, y las tareas fechadas se consultan en el Almanaque. No hay una sección separada de Trabajo.
 
 ## Características
 
 - **Componer** notas desde la parte inferior; cada nota es un bloque de texto.
-- **Rutina** organiza actividades semanales recurrentes y tareas puntuales en cada día.
+- **Rutina** muestra los siete días en una grilla semanal; permite editar y eliminar actividades recurrentes, sin checks ni tareas fechadas.
 - **Almanaque** muestra los doce meses del año para crear y consultar tareas por fecha.
 - Las fechas se guardan como `YYYY-MM-DD` local para evitar cambios de día por zona horaria.
 - **Completar** → mueve la nota a _Realizadas_ con animación de check y colapso; el texto no queda tachado.
@@ -15,7 +15,7 @@ Una agenda personal con tres áreas: **Tareas**, **Rutina** y **Almanaque**. Las
 - **No se pueden reabrir** las completadas — solo borrar, y quedan en _Realizadas_ hasta que se eliminan.
 - Límite **100 caracteres** por nota; los bloques se limitan a **máx. 2 líneas**; siguiente nota debajo.
 - El compositore está **fijo en la parte inferior**.
-- Estilo **papel cálido + teal**: `#FAF9F7` / `#0D9488`.
+- Estilo **papel cálido** con acentos teal para Tareas, cian para Rutina y violeta para Almanaque.
 - **PWA ligera**: `registerType: 'prompt'` + `injectRegister: null`; SW desactivada en dev.
 - **Instalable**: botón de instalación y guía para navegadores sin diálogo nativo.
 - Sin router: tabs via `location.hash` (`#tareas` / `#rutina` / `#almanaque`) para el botón Atrás de Android. Los hashes antiguos se aceptan como entrada a Tareas.

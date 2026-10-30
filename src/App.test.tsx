@@ -100,7 +100,7 @@ describe('App', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Rutina' }));
     expect(document.getElementById('panel-routine')).toBeVisible();
-    expect(screen.getByText('Tu semana')).toBeInTheDocument();
+    expect(screen.getByText('Rutina semanal')).toBeInTheDocument();
 
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('tab', { name: 'Almanaque' })).toHaveAttribute('aria-selected', 'true');
@@ -114,7 +114,7 @@ describe('App', () => {
     expect(screen.getByText('Tus planes en el año.')).toBeInTheDocument();
   });
 
-  it('crea una rutina y registra su cumplimiento para el día', async () => {
+  it('crea una actividad semanal fija que no se marca como tarea', async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -123,14 +123,35 @@ describe('App', () => {
     await user.type(screen.getByLabelText('Actividad que se repite'), 'Gimnasio');
     await user.click(screen.getByRole('button', { name: 'Guardar rutina' }));
 
-    const toggle = await screen.findByRole('button', {
-      name: 'Marcar Gimnasio como realizada',
-    });
-    await user.click(toggle);
+    expect(await screen.findByText('Gimnasio')).toBeVisible();
+    expect(screen.queryByRole('button', { name: /Marcar Gimnasio/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Planear algo para este día/ })).not.toBeInTheDocument();
+  });
 
-    await waitFor(() => {
-      expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    });
+  it('muestra solo los nombres de los siete días y permite editar una rutina', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('tab', { name: 'Rutina' }));
+    expect(screen.getAllByRole('article')).toHaveLength(7);
+    expect(
+      ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'].map((day) =>
+        screen.getByRole('article', { name: day }),
+      ),
+    ).toHaveLength(7);
+    expect(screen.queryByRole('button', { name: /Planear algo para este día/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '+ Agregar rutina semanal' }));
+    await user.type(screen.getByLabelText('Actividad que se repite'), 'Lectura');
+    await user.click(screen.getByRole('button', { name: 'Guardar rutina' }));
+
+    await user.click(await screen.findByRole('button', { name: 'Editar rutina Lectura' }));
+    const input = screen.getByLabelText('Editar actividad');
+    await user.clear(input);
+    await user.type(input, 'Lectura diaria');
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    expect(await screen.findByRole('button', { name: 'Editar rutina Lectura diaria' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Editar rutina Lectura' })).not.toBeInTheDocument();
   });
 
   it('agrega una tarea fechada desde el Almanaque', async () => {

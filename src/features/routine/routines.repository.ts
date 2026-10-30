@@ -52,6 +52,20 @@ export function createRoutinesRepository(
       return routine;
     },
 
+    async update(id: string, input: { text: string; weekdays: number[] }): Promise<Routine> {
+      const text = normalizeRoutineText(input.text);
+      const weekdays = normalizeWeekdays(input.weekdays);
+
+      return routines.db.transaction('rw', routines, async () => {
+        const routine = await routines.get(id);
+        if (!routine) throw new RoutineValidationError('La rutina ya no existe.');
+
+        const updated: Routine = { ...routine, text, weekdays, updatedAt: Date.now() };
+        await routines.put(updated);
+        return updated;
+      });
+    },
+
     toggleOccurrence(routineId: string, date: string): Promise<void> {
       normalizeScheduledDate(date);
       const occurrenceId = `${routineId}:${date}`;

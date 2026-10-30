@@ -31,6 +31,14 @@ export function TrashIcon(props: IconProps) {
   );
 }
 
+export function EditIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m14 5 5 5M4 20l4.3-.9L19 8.4a2.1 2.1 0 0 0-3-3L5.3 16.1 4 20Z" />
+    </Icon>
+  );
+}
+
 export function CheckSmallIcon(props: IconProps) {
   return (
     <Icon strokeWidth={2.4} {...props}>
