@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppSplash } from './components/AppSplash';
 import { CompletionCelebration } from './components/ui/CompletionCelebration';
 import { Toaster } from './components/ui/Toaster';
 import { TrashIcon } from './components/ui/icons';
@@ -21,6 +22,8 @@ import { UpdateBanner } from './pwa/UpdateBanner';
 const ENTER_ANIMATION_MS = 400;
 const HIGHLIGHT_MS = 900;
 const COMPLETION_CELEBRATION_MS = 850;
+/** Coincide con la duración total de la animación del splash en `styles/index.css`. */
+const APP_SPLASH_MS = 1700;
 
 export default function App() {
   const [section, setSection] = useHashTab();
@@ -37,6 +40,8 @@ export default function App() {
   const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
   const [confirmingDeleteAll, setConfirmingDeleteAll] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  // El splash de bienvenida se muestra en cada apertura, salvo con animación reducida.
+  const [showSplash, setShowSplash] = useState(() => !prefersReducedMotion());
   const pendingPanelRef = useRef<HTMLElement>(null);
   const handleCompletionStart = useCallback(() => {
     setShowCompletionCelebration(true);
@@ -83,6 +88,16 @@ export default function App() {
       window.clearTimeout(timer);
     };
   }, [showCompletionCelebration]);
+
+  useEffect(() => {
+    if (!showSplash) return;
+    const timer = window.setTimeout(() => {
+      setShowSplash(false);
+    }, APP_SPLASH_MS);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [showSplash]);
 
   const handleCreate = async (input: NoteInput) => {
     const note = await create(input);
@@ -247,7 +262,7 @@ export default function App() {
         aria-labelledby="tab-routine"
         hidden={section !== 'routine'}
         data-section="routine"
-        className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
       >
         <RoutineView />
       </main>
@@ -274,6 +289,7 @@ export default function App() {
       {section === 'tasks' ? <NoteComposer onCreate={handleCreate} /> : null}
 
       <Toaster />
+      {showSplash ? <AppSplash /> : null}
       {showCompletionCelebration ? <CompletionCelebration /> : null}
     </div>
   );

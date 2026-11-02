@@ -197,6 +197,42 @@
   }
 }
 
+/* Barrida de bienvenida: el contenido se revela de izquierda a derecha y el
+   splash completo se desvanece para dejar visible la app. 1700ms coincide con
+   `APP_SPLASH_MS` en `App.tsx`. */
+@keyframes app-splash-sweep {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 1;
+    transform: translateY(14px);
+  }
+  28% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: none;
+  }
+  62% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes app-splash-out {
+  0%,
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 .completion-celebration {
   position: fixed;
   z-index: 100;
@@ -220,6 +256,25 @@
   background: rgb(255 255 255 / 18%);
   box-shadow: 0 12px 40px rgb(0 0 0 / 12%);
   animation: completion-check-pop 850ms var(--ease-spring) both;
+}
+
+/* Bienvenida: capa de canvas que cubre la app mientras el contenido hace la
+   barrida de entrada y el conjunto se desvanece arriba del todo. */
+.app-splash {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--color-canvas);
+}
+
+.app-splash__content {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 0 24px;
+  text-align: center;
 }
 
 /* Estructura estable: el wrapper siempre es grid de 1fr, así el colapso a 0fr
@@ -257,6 +312,14 @@
 
   .completion-celebration {
     animation-name: completion-sweep;
+  }
+
+  .app-splash {
+    animation: app-splash-out 1700ms var(--ease-quart) both;
+  }
+
+  .app-splash__content {
+    animation: app-splash-sweep 1700ms var(--ease-quart) both;
   }
 
   .note-check {

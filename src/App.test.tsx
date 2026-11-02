@@ -13,11 +13,11 @@ beforeEach(async () => {
 });
 
 describe('App', () => {
-  it('muestra Simple Agenda y explica la instalación manual cuando el navegador no ofrece prompt', async () => {
+  it('muestra la marca compacta SA y explica la instalación manual cuando el navegador no ofrece prompt', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: 'Simple Agenda' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'SA' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Instalar app' }));
 
     expect(screen.getByRole('dialog', { name: 'Instalar Simple Agenda' })).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe('App', () => {
     render(<App />);
 
     await user.click(screen.getByRole('tab', { name: 'Rutina' }));
-    await user.click(screen.getByRole('button', { name: '+ Agregar rutina semanal' }));
+    await user.click(screen.getByRole('button', { name: 'Agregar rutina semanal' }));
     await user.type(screen.getByLabelText('Actividad que se repite'), 'Gimnasio');
     await user.click(screen.getByRole('button', { name: 'Guardar rutina' }));
 
@@ -128,19 +128,20 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: /Planear algo para este día/ })).not.toBeInTheDocument();
   });
 
-  it('muestra solo los nombres de los siete días y permite editar una rutina', async () => {
+  it('muestra los siete días más la celda de Semana N y permite editar una rutina', async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await user.click(screen.getByRole('tab', { name: 'Rutina' }));
-    expect(screen.getAllByRole('article')).toHaveLength(7);
+    expect(screen.getAllByRole('article')).toHaveLength(8);
     expect(
       ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'].map((day) =>
         screen.getByRole('article', { name: day }),
       ),
     ).toHaveLength(7);
+    expect(screen.getByRole('article', { name: /Semana \d+/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Planear algo para este día/ })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '+ Agregar rutina semanal' }));
+    await user.click(screen.getByRole('button', { name: 'Agregar rutina semanal' }));
     await user.type(screen.getByLabelText('Actividad que se repite'), 'Lectura');
     await user.click(screen.getByRole('button', { name: 'Guardar rutina' }));
 

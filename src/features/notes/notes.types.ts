@@ -1,4 +1,4 @@
-export const MAX_TEXT_LENGTH = 100;
+export const MAX_TEXT_LENGTH = 200;
 
 export type NoteStatus = 'pending' | 'done';
 

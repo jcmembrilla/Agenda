@@ -43,6 +43,18 @@ export function formatLongDate(date: Date): string {
   return `${formatted.charAt(0).toLocaleUpperCase('es-AR')}${formatted.slice(1)}`;
 }
 
+/**
+ * Número de semana ISO-8601: la semana 1 es la que contiene el primer jueves
+ * del año y arranca en lunes. Se usa para la celda "Semana N" de la rutina.
+ */
+export function isoWeekNumber(date: Date): number {
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  // Se ubica en el jueves de la semana ISO: define el año de la semana.
+  target.setDate(target.getDate() + 4 - (target.getDay() || 7));
+  const yearStart = new Date(target.getFullYear(), 0, 1);
+  return Math.ceil(((target.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
 export function weekdayIndex(date: Date): number {
   return (date.getDay() + 6) % 7;
 }

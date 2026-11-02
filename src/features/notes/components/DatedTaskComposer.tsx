@@ -33,7 +33,7 @@ export function DatedTaskComposer({ date, onCreate, onCancel }: DatedTaskCompose
     <form onSubmit={(event) => void save(event)} className="flex items-center gap-2">
       <input
         value={text}
-        maxLength={100}
+        maxLength={200}
         onChange={(event) => setText(event.target.value)}
         aria-label="Nueva tarea para este día"
         placeholder="¿Qué querés hacer?"
