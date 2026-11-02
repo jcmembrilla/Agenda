@@ -64,6 +64,26 @@ export function PlusIcon(props: IconProps) {
   );
 }
 
+export function MinusIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="M5 12h14" />
+    </Icon>
+  );
+}
+
+/** Despertador: suena a "alarma" mejor que un reloj suelto. */
+export function AlarmIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.9} {...props}>
+      <circle cx="12" cy="13" r="7" />
+      <path d="M12 9.75V13l2.25 1.5" />
+      <path d="m4.5 5.75 2 2M19.5 5.75l-2 2" />
+      <path d="m8.5 19.5-1.5 1.5M15.5 19.5l1.5 1.5" />
+    </Icon>
+  );
+}
+
 export function CalendarIcon(props: IconProps) {
   return (
     <Icon {...props}>

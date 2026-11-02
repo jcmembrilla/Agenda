@@ -11,6 +11,7 @@ import { TasksView } from './features/notes/components/TasksView';
 import { useHashTab, type AppSection } from './features/notes/hooks/useHashTab';
 import { useNoteMutations } from './features/notes/hooks/useNoteMutations';
 import { useNotes } from './features/notes/hooks/useNotes';
+import { useSwipeNavigation } from './features/notes/hooks/useSwipeNavigation';
 import type { Note, NoteInput, NoteStatus } from './features/notes/notes.types';
 import { RoutineView } from './features/routine/RoutineView';
 import { prefersReducedMotion } from './lib/motion';
@@ -176,8 +177,13 @@ export default function App() {
     setSection(nextSection);
   };
 
+  const swipeHandlers = useSwipeNavigation(section, handleSectionChange);
+
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-[560px] flex-col overflow-hidden bg-canvas">
+    <div
+      {...swipeHandlers}
+      className="mx-auto flex h-dvh w-full max-w-[560px] flex-col overflow-hidden bg-canvas"
+    >
       <AppHeader />
 
       <div className="shrink-0 pb-3">

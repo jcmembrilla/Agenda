@@ -28,6 +28,19 @@ export function normalizeWeekdays(weekdays: number[]): number[] {
   return normalized;
 }
 
+/**
+ * La alarma es opcional: vacío o espacios la descartan y el pedido del usuario
+ * queda guardado recién cuando la app agenda notificaciones reales.
+ */
+export function normalizeRoutineTime(time?: string | null): string | undefined {
+  const trimmed = time?.trim();
+  if (!trimmed) return undefined;
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(trimmed)) {
+    throw new RoutineValidationError('La alarma debe ser una hora válida (formato 15:00).');
+  }
+  return trimmed;
+}
+
 export function createRoutinesRepository(
   routines: Table<Routine, string>,
   occurrences: Table<RoutineOccurrence, string>,
@@ -43,24 +56,32 @@ export function createRoutinesRepository(
       return occurrences.where('date').between(startDate, endDate, true, true).toArray();
     },
 
-    async create(input: { text: string; weekdays: number[] }): Promise<Routine> {
+    async create(input: { text: string; weekdays: number[]; time?: string }): Promise<Routine> {
       const text = normalizeRoutineText(input.text);
       const weekdays = normalizeWeekdays(input.weekdays);
+      const time = normalizeRoutineTime(input.time);
       const now = Date.now();
       const routine: Routine = { id: createId(), text, weekdays, createdAt: now, updatedAt: now };
+      if (time) routine.time = time;
       await routines.add(routine);
       return routine;
     },
 
-    async update(id: string, input: { text: string; weekdays: number[] }): Promise<Routine> {
+    async update(id: string, input: { text: string; weekdays: number[]; time?: string }): Promise<Routine> {
       const text = normalizeRoutineText(input.text);
       const weekdays = normalizeWeekdays(input.weekdays);
+      const time = normalizeRoutineTime(input.time);
 
       return routines.db.transaction('rw', routines, async () => {
         const routine = await routines.get(id);
         if (!routine) throw new RoutineValidationError('La rutina ya no existe.');
 
         const updated: Routine = { ...routine, text, weekdays, updatedAt: Date.now() };
+        if (time) {
+          updated.time = time;
+        } else {
+          delete updated.time;
+        }
         await routines.put(updated);
         return updated;
       });

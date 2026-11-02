@@ -3,6 +3,8 @@ export interface Routine {
   text: string;
   /** 0 = lunes, 6 = domingo. */
   weekdays: number[];
+  /** Alarma opcional en formato `HH:mm` (ej. "15:00"). */
+  time?: string;
   createdAt: number;
   updatedAt: number;
 }
