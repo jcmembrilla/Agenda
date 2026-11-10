@@ -2,11 +2,13 @@
 
 Una agenda PWA offline-first minimalista hecha con React + Vite + Tailwind + Dexie.
 
-Una agenda personal con tres áreas: **Tareas**, **Rutina** y **Almanaque**. Las notas rápidas conservan Pendientes/Realizadas; las rutinas son actividades fijas asociadas a los días elegidos, y las tareas fechadas se consultan en el Almanaque. No hay una sección separada de Trabajo.
+Una agenda personal con cuatro áreas: **Notas**, **Tareas**, **Rutina** y **Almanaque**. Las notas personales son apuntes extensos que se guardan automáticamente; las notas rápidas conservan Pendientes/Realizadas; las rutinas son actividades fijas asociadas a los días elegidos, y las tareas fechadas se consultan en el Almanaque. No hay una sección separada de Trabajo.
 
 ## Características
 
 - **Componer** notas desde la parte inferior; cada nota es un bloque de texto.
+- **Notas personales** en una pestaña independiente, almacenadas en IndexedDB; cada bloque muestra un título numerado editable y la fecha, conserva su tamaño natural hasta media pantalla y se expande para editarse al seleccionarlo.
+- **Eliminar una nota personal** con papelera y opción de deshacer durante cinco segundos.
 - **Rutina** muestra los siete días en una grilla semanal; permite editar y eliminar actividades recurrentes, sin checks ni tareas fechadas.
 - **Almanaque** muestra los doce meses del año para crear y consultar tareas por fecha.
 - Las fechas se guardan como `YYYY-MM-DD` local para evitar cambios de día por zona horaria.
@@ -18,7 +20,7 @@ Una agenda personal con tres áreas: **Tareas**, **Rutina** y **Almanaque**. Las
 - Estilo **papel cálido** con acentos teal para Tareas, cian para Rutina y violeta para Almanaque.
 - **PWA ligera**: `registerType: 'prompt'` + `injectRegister: null`; SW desactivada en dev.
 - **Instalable**: botón de instalación y guía para navegadores sin diálogo nativo.
-- Sin router: tabs via `location.hash` (`#tareas` / `#rutina` / `#almanaque`) para el botón Atrás de Android. Los hashes antiguos se aceptan como entrada a Tareas.
+- Sin router: tabs via `location.hash` (`#notas` / `#tareas` / `#rutina` / `#almanaque`) para el botón Atrás de Android. Los hashes antiguos se aceptan como entrada a Tareas.
 - Íconos generados por script propio (sin dependencias).
 
 ## Pila tecnológica (bloqueado)
@@ -43,7 +45,7 @@ Una agenda personal con tres áreas: **Tareas**, **Rutina** y **Almanaque**. Las
 - **Sin librerías de animación**: keyframes puras CSS; strike-through animado vía `text-decoration-color` transition.
 - **Colapso por grid**: `grid-template-rows: 1fr → 0fr` sin medir altura.
 - **Iconos**: generados por `scripts/generate-icons.mjs` (script PNG a mano, supersampling 4×4).
-- **Sin router**: hash de tres áreas para Android Back; Pendientes/Realizadas son pestañas internas de Tareas.
+- **Sin router**: hash de cuatro áreas para Android Back; Pendientes/Realizadas son pestañas internas de Tareas.
 - **Reducida**: `prefers-reduced-motion` salta animación y persiste al instante.
 
 ## Scripts disponibles
@@ -66,6 +68,8 @@ src/
   lib/          # id, cn, dates, motion, scroll, useAutosize
   styles/       # tokens, keyframes, dark override
   features/
+    personal-notes/
+      personalNotes.repository.ts # apuntes extensos, con edición automática
     notes/
       notes.types.ts
       notes.repository.ts # notas rápidas y tareas fechadas

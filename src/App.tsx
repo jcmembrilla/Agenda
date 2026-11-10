@@ -13,6 +13,7 @@ import { useNoteMutations } from './features/notes/hooks/useNoteMutations';
 import { useNotes } from './features/notes/hooks/useNotes';
 import { useSwipeNavigation } from './features/notes/hooks/useSwipeNavigation';
 import type { Note, NoteInput, NoteStatus } from './features/notes/notes.types';
+import { PersonalNotesView } from './features/personal-notes/PersonalNotesView';
 import { RoutineView } from './features/routine/RoutineView';
 import { prefersReducedMotion } from './lib/motion';
 import { scrollToTop } from './lib/scroll';
@@ -189,6 +190,17 @@ export default function App() {
       <div className="shrink-0 pb-3">
         <MainTabs value={section} onChange={handleSectionChange} />
       </div>
+
+      <main
+        id="panel-personal-notes"
+        role="tabpanel"
+        aria-labelledby="tab-personal-notes"
+        hidden={section !== 'personal-notes'}
+        data-section="personal-notes"
+        className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
+      >
+        <PersonalNotesView />
+      </main>
 
       <main
         ref={pendingPanelRef}

@@ -15,7 +15,7 @@ describe('AnotadorDB migration', () => {
     migratedDatabase = undefined;
   });
 
-  it('preserves existing notes when upgrading from v1 to v2', async () => {
+  it('preserves existing data when upgrading and creates the personal notes table', async () => {
     const name = `migration-test-${crypto.randomUUID()}`;
     legacyDatabase = new Dexie(name);
     legacyDatabase.version(1).stores({
@@ -42,10 +42,42 @@ describe('AnotadorDB migration', () => {
       status: 'pending',
     });
     expect(migratedDatabase.tables.map(({ name: tableName }) => tableName)).toEqual(
-      expect.arrayContaining(['routines', 'routineOccurrences']),
+      expect.arrayContaining(['personalNotes', 'routines', 'routineOccurrences']),
     );
     expect(migratedDatabase.notes.schema.indexes.map(({ name: indexName }) => indexName)).toContain(
       '[deleted+scheduledDate+createdAt]',
     );
+  });
+
+  it('adds numbered titles to personal notes when upgrading from v3', async () => {
+    const name = `personal-notes-migration-${crypto.randomUUID()}`;
+    legacyDatabase = new Dexie(name);
+    legacyDatabase.version(3).stores({
+      notes:
+        'id, status, createdAt, [deleted+status+createdAt], [deleted+status+completedAt], [deleted+scheduledDate+createdAt]',
+      personalNotes: 'id, createdAt, updatedAt',
+      routines: 'id, createdAt, updatedAt',
+      routineOccurrences: 'id, date, routineId, [date+routineId]',
+    });
+    await legacyDatabase.open();
+    await legacyDatabase.table('personalNotes').bulkAdd([
+      { id: 'later', text: 'Segunda', createdAt: 200, updatedAt: 200 },
+      { id: 'earlier', text: 'Primera', createdAt: 100, updatedAt: 100 },
+    ]);
+    legacyDatabase.close();
+
+    migratedDatabase = new AnotadorDB(name);
+    await migratedDatabase.open();
+
+    expect(await migratedDatabase.personalNotes.get('earlier')).toMatchObject({
+      sequence: 1,
+      title: 'Nota 1',
+      deleted: 0,
+    });
+    expect(await migratedDatabase.personalNotes.get('later')).toMatchObject({
+      sequence: 2,
+      title: 'Nota 2',
+      deleted: 0,
+    });
   });
 });

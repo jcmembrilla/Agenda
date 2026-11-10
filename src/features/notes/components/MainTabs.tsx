@@ -1,5 +1,5 @@
 import { useRef, type KeyboardEvent } from 'react';
-import { CalendarIcon, NoteIcon, RoutineIcon } from '../../../components/ui/icons';
+import { CalendarIcon, MemoIcon, NoteIcon, RoutineIcon } from '../../../components/ui/icons';
 import { cn } from '../../../lib/cn';
 import type { AppSection } from '../hooks/useHashTab';
 
@@ -13,6 +13,7 @@ const TABS: ReadonlyArray<{
   label: string;
   Icon: typeof NoteIcon;
 }> = [
+  { value: 'personal-notes', label: 'Notas', Icon: MemoIcon },
   { value: 'tasks', label: 'Tareas', Icon: NoteIcon },
   { value: 'routine', label: 'Rutina', Icon: RoutineIcon },
   { value: 'almanac', label: 'Almanaque', Icon: CalendarIcon },

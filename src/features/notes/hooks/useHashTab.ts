@@ -1,13 +1,15 @@
 import { useCallback, useSyncExternalStore } from 'react';
-export type AppSection = 'tasks' | 'routine' | 'almanac';
+export type AppSection = 'personal-notes' | 'tasks' | 'routine' | 'almanac';
 
 const HASH_BY_SECTION: Record<AppSection, string> = {
+  'personal-notes': '#notas',
   tasks: '#tareas',
   routine: '#rutina',
   almanac: '#almanaque',
 };
 
 function readSectionFromHash(): AppSection {
+  if (window.location.hash === HASH_BY_SECTION['personal-notes']) return 'personal-notes';
   if (window.location.hash === HASH_BY_SECTION.routine) return 'routine';
   if (window.location.hash === HASH_BY_SECTION.almanac) return 'almanac';
   return 'tasks';

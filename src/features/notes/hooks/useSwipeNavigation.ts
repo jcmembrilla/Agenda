@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import type { TouchEvent } from 'react';
 import type { AppSection } from './useHashTab';
 
-const SECTION_ORDER: ReadonlyArray<AppSection> = ['tasks', 'routine', 'almanac'];
+const SECTION_ORDER: ReadonlyArray<AppSection> = ['personal-notes', 'tasks', 'routine', 'almanac'];
 /** Un deslizado corto pero decidido: menos que eso es un toque o un scroll interrumpido. */
 const MIN_SWIPE_PX = 60;
 /** Gesto más horizontal que vertical, para no robarle el scroll vertical a las listas. */
@@ -11,7 +11,7 @@ const MAX_DURATION_MS = 900;
 const MAX_MULTI_TOUCH = 1;
 
 /**
- * Navegación entre Tareas/Rutina/Almanaque con el dedo: deslizando a la
+ * Navegación entre Notas/Tareas/Rutina/Almanaque con el dedo: deslizando a la
  * izquierda avanza a la sección siguiente, a la derecha vuelve a la anterior.
  * Devuelve los handlers para el contenedor de los paneles.
  */

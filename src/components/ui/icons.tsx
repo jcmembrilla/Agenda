@@ -56,6 +56,15 @@ export function NoteIcon(props: IconProps) {
   );
 }
 
+export function MemoIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M6.5 3.75h11A1.75 1.75 0 0 1 19.25 5.5v13a1.75 1.75 0 0 1-1.75 1.75h-11A1.75 1.75 0 0 1 4.75 18.5v-13A1.75 1.75 0 0 1 6.5 3.75Z" />
+      <path d="M8 8h8M8 12h8M8 16h5" />
+    </Icon>
+  );
+}
+
 export function PlusIcon(props: IconProps) {
   return (
     <Icon strokeWidth={2.2} {...props}>

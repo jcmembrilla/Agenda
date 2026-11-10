@@ -7,6 +7,7 @@ import { db } from './lib/db';
 
 beforeEach(async () => {
   await db.notes.clear();
+  await db.personalNotes.clear();
   await db.routines.clear();
   await db.routineOccurrences.clear();
   window.history.replaceState(null, '', '/');
@@ -65,6 +66,10 @@ describe('App', () => {
     render(<App />);
 
     expect(screen.getByRole('tab', { name: 'Tareas' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Notas' })).toHaveAttribute(
+      'aria-controls',
+      'panel-personal-notes',
+    );
     expect(screen.getByRole('tab', { name: 'Rutina' })).toHaveAttribute(
       'aria-controls',
       'panel-routine',
@@ -93,6 +98,45 @@ describe('App', () => {
     expect(screen.getByLabelText('Nueva nota')).toBeInTheDocument();
     expect(await screen.findByText('Nada pendiente')).toBeInTheDocument();
   });
+
+  it('guarda, edita y permite recuperar notas personales', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('tab', { name: 'Notas' }));
+    await user.type(screen.getByLabelText('Escribir una nota nueva'), 'Una idea importante');
+    await user.click(screen.getByRole('button', { name: 'Guardar nota' }));
+
+    const editor = await screen.findByRole('textbox', { name: 'Editar nota' });
+    expect(await db.personalNotes.count()).toBe(1);
+    expect(editor).toHaveValue('Una idea importante');
+    const title = screen.getByRole('textbox', { name: 'Título de la nota 1' });
+    expect(title).toHaveValue('Nota 1');
+    expect(document.querySelector('time')).toHaveTextContent(
+      new Intl.DateTimeFormat('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit',
+      }).format(new Date((await db.personalNotes.toCollection().first())?.createdAt ?? 0)),
+    );
+    await user.clear(title);
+    await user.type(title, 'Proyecto');
+    await user.keyboard('{Enter}');
+    await waitFor(async () => {
+      expect((await db.personalNotes.toCollection().first())?.title).toBe('Proyecto');
+    });
+    await user.type(editor, '\ny con más detalle');
+
+    await waitFor(async () => {
+      const savedNote = await db.personalNotes.toCollection().first();
+      expect(savedNote?.text).toBe('Una idea importante\ny con más detalle');
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Eliminar nota: Proyecto' }));
+    await user.click(await screen.findByRole('button', { name: 'Deshacer' }));
+    expect(await screen.findByRole('button', { name: /Abrir y editar nota/ })).toBeVisible();
+    expect(await db.personalNotes.count()).toBe(1);
+  }, 10000);
 
   it('cambia a Rutina y Almanaque sin abandonar Tareas', async () => {
     const user = userEvent.setup();
