@@ -4,7 +4,8 @@ import { CompletionCelebration } from './components/ui/CompletionCelebration';
 import { Toaster } from './components/ui/Toaster';
 import { TrashIcon } from './components/ui/icons';
 import { AlmanacView } from './features/almanac/AlmanacView';
-import { AppHeader } from './features/notes/components/AppHeader';
+import { EconomyView } from './features/economy/EconomyView';
+import { EisenhowerView } from './features/eisenhower/EisenhowerView';
 import { MainTabs } from './features/notes/components/MainTabs';
 import { NoteComposer } from './features/notes/components/NoteComposer';
 import { TasksView } from './features/notes/components/TasksView';
@@ -26,9 +27,21 @@ const HIGHLIGHT_MS = 900;
 const COMPLETION_CELEBRATION_MS = 850;
 /** Coincide con la duración total de la animación del splash en `styles/index.css`. */
 const APP_SPLASH_MS = 1700;
+const EISENHOWER_TOOL_STORAGE_KEY = 'anotador:eisenhower-tool-added';
+const ECONOMY_TOOL_STORAGE_KEY = 'anotador:economy-tool-added';
 
 export default function App() {
   const [section, setSection] = useHashTab();
+  const [eisenhowerAdded, setEisenhowerAdded] = useState(
+    () =>
+      window.location.hash === '#pendientes' ||
+      window.localStorage.getItem(EISENHOWER_TOOL_STORAGE_KEY) === 'true',
+  );
+  const [economyAdded, setEconomyAdded] = useState(
+    () =>
+      window.location.hash === '#economia' ||
+      window.localStorage.getItem(ECONOMY_TOOL_STORAGE_KEY) === 'true',
+  );
   const [status, setStatus] = useState<NoteStatus>(() =>
     window.location.hash === '#realizadas' || window.location.hash === '#done' ? 'done' : 'pending',
   );
@@ -53,7 +66,6 @@ export default function App() {
   useEffect(() => {
     if (
       !window.location.hash ||
-      window.location.hash === '#pendientes' ||
       window.location.hash === '#realizadas' ||
       window.location.hash === '#done'
     ) {
@@ -178,6 +190,26 @@ export default function App() {
     setSection(nextSection);
   };
 
+  const handleAddEisenhower = () => {
+    setEisenhowerAdded(true);
+    setSection('eisenhower');
+    try {
+      window.localStorage.setItem(EISENHOWER_TOOL_STORAGE_KEY, 'true');
+    } catch {
+      showToast({ message: 'Pendientes se agregó, pero no se pudo recordar en este dispositivo.' });
+    }
+  };
+
+  const handleAddEconomy = () => {
+    setEconomyAdded(true);
+    setSection('economy');
+    try {
+      window.localStorage.setItem(ECONOMY_TOOL_STORAGE_KEY, 'true');
+    } catch {
+      showToast({ message: 'Economía se agregó, pero no se pudo recordar en este dispositivo.' });
+    }
+  };
+
   const swipeHandlers = useSwipeNavigation(section, handleSectionChange);
 
   return (
@@ -185,11 +217,38 @@ export default function App() {
       {...swipeHandlers}
       className="mx-auto flex h-dvh w-full max-w-[560px] flex-col overflow-hidden bg-canvas"
     >
-      <AppHeader />
-
       <div className="shrink-0 pb-3">
-        <MainTabs value={section} onChange={handleSectionChange} />
+        <MainTabs
+          value={section}
+          eisenhowerAdded={eisenhowerAdded}
+          economyAdded={economyAdded}
+          onChange={handleSectionChange}
+          onAddEisenhower={handleAddEisenhower}
+          onAddEconomy={handleAddEconomy}
+        />
       </div>
+
+      <main
+        id="panel-economy"
+        role="tabpanel"
+        aria-labelledby="tab-economy"
+        hidden={section !== 'economy'}
+        data-section="economy"
+        className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 pt-3"
+      >
+        <EconomyView />
+      </main>
+
+      <main
+        id="panel-eisenhower"
+        role="tabpanel"
+        aria-labelledby="tab-eisenhower"
+        hidden={section !== 'eisenhower'}
+        data-section="eisenhower"
+        className="scroll-fade min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 pt-3"
+      >
+        <EisenhowerView />
+      </main>
 
       <main
         id="panel-personal-notes"

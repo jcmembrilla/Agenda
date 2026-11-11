@@ -2,6 +2,8 @@ import Dexie, { type Table } from 'dexie';
 import type { PersonalNote } from '../features/personal-notes/personalNotes.types';
 import type { Note } from '../features/notes/notes.types';
 import type { Routine, RoutineOccurrence } from '../features/routine/routines.types';
+import type { EisenhowerTask } from '../features/eisenhower/eisenhower.types';
+import type { EconomyEntry } from '../features/economy/economy.types';
 
 /**
  * Esquema v2.
@@ -16,6 +18,8 @@ export class AnotadorDB extends Dexie {
   personalNotes!: Table<PersonalNote, string>;
   routines!: Table<Routine, string>;
   routineOccurrences!: Table<RoutineOccurrence, string>;
+  eisenhowerTasks!: Table<EisenhowerTask, string>;
+  economyEntries!: Table<EconomyEntry, string>;
 
   constructor(name = 'anotador') {
     super(name);
@@ -56,6 +60,23 @@ export class AnotadorDB extends Dexie {
           })),
         );
       });
+    this.version(5).stores({
+      notes:
+        'id, status, createdAt, [deleted+status+createdAt], [deleted+status+completedAt], [deleted+scheduledDate+createdAt]',
+      personalNotes: 'id, createdAt, updatedAt, deleted',
+      routines: 'id, createdAt, updatedAt',
+      routineOccurrences: 'id, date, routineId, [date+routineId]',
+      eisenhowerTasks: 'id, quadrant, createdAt',
+    });
+    this.version(6).stores({
+      notes:
+        'id, status, createdAt, [deleted+status+createdAt], [deleted+status+completedAt], [deleted+scheduledDate+createdAt]',
+      personalNotes: 'id, createdAt, updatedAt, deleted',
+      routines: 'id, createdAt, updatedAt',
+      routineOccurrences: 'id, date, routineId, [date+routineId]',
+      eisenhowerTasks: 'id, quadrant, createdAt',
+      economyEntries: 'id, month, category, [month+category]',
+    });
   }
 }
 

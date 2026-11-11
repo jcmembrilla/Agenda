@@ -38,7 +38,6 @@
     --color-success: #34d399;
     --color-danger: #f87171;
   }
-
 }
 
 [data-section='routine'] {
@@ -51,6 +50,16 @@
   --color-accent-soft: #f5f3ff;
 }
 
+[data-section='eisenhower'] {
+  --color-accent: #ea580c;
+  --color-accent-soft: #fff7ed;
+}
+
+[data-section='economy'] {
+  --color-accent: #059669;
+  --color-accent-soft: #ecfdf5;
+}
+
 @media (prefers-color-scheme: dark) {
   [data-section='routine'] {
     --color-accent: #67e8f9;
@@ -60,6 +69,16 @@
   [data-section='almanac'] {
     --color-accent: #c4b5fd;
     --color-accent-soft: #4c1d95;
+  }
+
+  [data-section='eisenhower'] {
+    --color-accent: #fb923c;
+    --color-accent-soft: #431407;
+  }
+
+  [data-section='economy'] {
+    --color-accent: #34d399;
+    --color-accent-soft: #064e3b;
   }
 }
 
@@ -100,6 +119,14 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 /* ---------------------------------------------------------------------------

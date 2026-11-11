@@ -42,7 +42,13 @@ describe('AnotadorDB migration', () => {
       status: 'pending',
     });
     expect(migratedDatabase.tables.map(({ name: tableName }) => tableName)).toEqual(
-      expect.arrayContaining(['personalNotes', 'routines', 'routineOccurrences']),
+      expect.arrayContaining([
+        'personalNotes',
+        'routines',
+        'routineOccurrences',
+        'eisenhowerTasks',
+        'economyEntries',
+      ]),
     );
     expect(migratedDatabase.notes.schema.indexes.map(({ name: indexName }) => indexName)).toContain(
       '[deleted+scheduledDate+createdAt]',

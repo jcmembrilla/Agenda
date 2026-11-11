@@ -102,6 +102,27 @@ export function CalendarIcon(props: IconProps) {
   );
 }
 
+export function GridIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="4" y="4" width="7" height="7" rx="1.5" />
+      <rect x="13" y="4" width="7" height="7" rx="1.5" />
+      <rect x="4" y="13" width="7" height="7" rx="1.5" />
+      <rect x="13" y="13" width="7" height="7" rx="1.5" />
+    </Icon>
+  );
+}
+
+export function WalletIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4.5 6.5h14A1.5 1.5 0 0 1 20 8v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11" />
+      <path d="M4 8h14a2 2 0 0 1 2 2v3h-5a2 2 0 0 0 0 4h5" />
+      <path d="M16 15h.01" />
+    </Icon>
+  );
+}
+
 export function RoutineIcon(props: IconProps) {
   return (
     <Icon {...props}>

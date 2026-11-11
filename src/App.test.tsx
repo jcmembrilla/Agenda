@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
@@ -10,15 +10,20 @@ beforeEach(async () => {
   await db.personalNotes.clear();
   await db.routines.clear();
   await db.routineOccurrences.clear();
+  await db.eisenhowerTasks.clear();
+  await db.economyEntries.clear();
+  window.localStorage.removeItem('anotador:eisenhower-tool-added');
+  window.localStorage.removeItem('anotador:economy-tool-added');
   window.history.replaceState(null, '', '/');
 });
 
 describe('App', () => {
-  it('muestra la marca compacta SA y explica la instalación manual cuando el navegador no ofrece prompt', async () => {
+  it('oculta la marca SA y explica la instalación manual desde otras herramientas', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: 'SA' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'SA' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Otras herramientas' }));
     await user.click(screen.getByRole('button', { name: 'Instalar app' }));
 
     expect(screen.getByRole('dialog', { name: 'Instalar Simple Agenda' })).toBeInTheDocument();
@@ -36,6 +41,7 @@ describe('App', () => {
     });
 
     render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Otras herramientas' }));
     fireEvent(window, installEvent);
     await user.click(screen.getByRole('button', { name: 'Instalar app' }));
 
@@ -98,6 +104,93 @@ describe('App', () => {
     expect(screen.getByLabelText('Nueva nota')).toBeInTheDocument();
     expect(await screen.findByText('Nada pendiente')).toBeInTheDocument();
   });
+
+  it('agrega Pendientes al inicio y permite gestionar tareas en los cuatro cuadrantes', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Otras herramientas' }));
+    await user.click(screen.getByRole('button', { name: 'Pendientes' }));
+
+    expect(screen.getAllByRole('tab')[0]).toHaveAccessibleName('Pendientes');
+    expect(screen.getByRole('tab', { name: 'Pendientes' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(screen.getByText('Organizá tus tareas según su urgencia e importancia.')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Abrir Urgente e importante' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Abrir Importante, no urgente' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Abrir Urgente, no importante' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Abrir Ni urgente ni importante' })).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Abrir Urgente e importante' }));
+    await user.type(
+      screen.getByLabelText('Nueva tarea para Hacer de inmediato'),
+      'Resolver entrega',
+    );
+    await user.click(screen.getByRole('button', { name: 'Agregar tarea' }));
+
+    expect(await screen.findByRole('button', { name: 'Completar Resolver entrega' })).toBeVisible();
+    expect(await db.eisenhowerTasks.count()).toBe(1);
+    await user.click(screen.getByRole('button', { name: 'Completar Resolver entrega' }));
+    expect(await screen.findByRole('button', { name: 'Reabrir Resolver entrega' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Eliminar Resolver entrega' }));
+    await waitFor(async () => expect(await db.eisenhowerTasks.count()).toBe(0));
+    await user.click(screen.getByRole('button', { name: 'Volver a los cuatro cuadrantes' }));
+    expect(screen.getByRole('button', { name: 'Abrir Urgente e importante' })).toBeVisible();
+  }, 15000);
+
+  it('agrega Economía desde herramientas y calcula el presupuesto mensual', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Otras herramientas' }));
+    await user.click(screen.getByRole('button', { name: 'Economía' }));
+
+    expect(screen.getAllByRole('tab')[0]).toHaveAccessibleName('Economía');
+    expect(screen.getByRole('tab', { name: 'Economía' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('heading', { name: 'Economía mensual' })).toBeVisible();
+
+    const addEntry = async (
+      sectionName: string,
+      groupName: string,
+      label: string,
+      amount: string,
+      frequency?: string,
+    ) => {
+      screen.getByRole('region', { name: sectionName });
+      const group = screen.getByRole('heading', { name: groupName }).closest('section');
+      if (!group) throw new Error(`No se encontró el grupo ${groupName}.`);
+      await user.click(within(group).getByRole('button', { name: 'Agregar movimiento' }));
+      await user.type(screen.getByLabelText('Nombre del movimiento'), label);
+      await user.type(screen.getByLabelText('Importe en pesos'), amount);
+      if (frequency) {
+        await user.selectOptions(screen.getByLabelText('Frecuencia del gasto'), frequency);
+      }
+      await user.click(within(group).getByRole('button', { name: 'Agregar' }));
+    };
+
+    await addEntry('Ingresos', 'Ingresos fijos', 'Sueldo', '1200');
+    await addEntry('Gastos', 'Gastos periódicos', 'Patente', '12000', 'yearly');
+    await addEntry('Ahorro e inversión', 'Fondo de emergencia', 'Fondo de emergencia', '200');
+
+    expect(await screen.findByText('Ingresos, gastos y ahorro están equilibrados.')).toBeVisible();
+    expect(await db.economyEntries.count()).toBe(3);
+
+    const monthPicker = screen.getByLabelText('Elegir mes del presupuesto');
+    const [year, month] = (monthPicker as HTMLInputElement).value.split('-').map(Number);
+    const nextMonthDate = new Date(year ?? 2000, month ?? 1, 1);
+    const nextMonth = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`;
+    await user.click(screen.getByRole('button', { name: 'Mes siguiente' }));
+    await waitFor(() => expect(monthPicker).toHaveValue(nextMonth));
+    const nextMonthGroup = screen
+      .getByRole('heading', { name: 'Ingresos fijos' })
+      .closest('section');
+    if (!nextMonthGroup) throw new Error('No se encontró el grupo de ingresos fijos.');
+    expect(
+      await within(nextMonthGroup).findByText('Todavía no agregaste movimientos.'),
+    ).toBeVisible();
+  }, 15000);
 
   it('guarda, edita y permite recuperar notas personales', async () => {
     const user = userEvent.setup();
@@ -169,7 +262,9 @@ describe('App', () => {
 
     expect(await screen.findByText('Gimnasio')).toBeVisible();
     expect(screen.queryByRole('button', { name: /Marcar Gimnasio/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Planear algo para este día/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Planear algo para este día/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('muestra los siete días más la celda de Semana N y permite editar una rutina', async () => {
@@ -184,7 +279,9 @@ describe('App', () => {
       ),
     ).toHaveLength(7);
     expect(screen.getByRole('article', { name: /Semana \d+/ })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Planear algo para este día/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Planear algo para este día/ }),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Agregar rutina semanal' }));
     await user.type(screen.getByLabelText('Actividad que se repite'), 'Lectura');
     await user.click(screen.getByRole('button', { name: 'Guardar rutina' }));
@@ -195,7 +292,9 @@ describe('App', () => {
     await user.type(input, 'Lectura diaria');
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
-    expect(await screen.findByRole('button', { name: 'Editar rutina Lectura diaria' })).toBeVisible();
+    expect(
+      await screen.findByRole('button', { name: 'Editar rutina Lectura diaria' }),
+    ).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Editar rutina Lectura' })).not.toBeInTheDocument();
   });
 
