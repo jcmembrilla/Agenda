@@ -105,29 +105,27 @@ describe('App', () => {
     expect(await screen.findByText('Nada pendiente')).toBeInTheDocument();
   });
 
-  it('agrega Pendientes al inicio y permite gestionar tareas en los cuatro cuadrantes', async () => {
+  it('agrega Pendientes al final y permite gestionar tareas en los cuatro cuadrantes', async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await user.click(screen.getByRole('button', { name: 'Otras herramientas' }));
     await user.click(screen.getByRole('button', { name: 'Pendientes' }));
 
-    expect(screen.getAllByRole('tab')[0]).toHaveAccessibleName('Pendientes');
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs[tabs.length - 1]).toHaveAccessibleName('Pendientes');
     expect(screen.getByRole('tab', { name: 'Pendientes' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
     expect(screen.getByText('Organizá tus tareas según su urgencia e importancia.')).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Abrir Urgente e importante' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Abrir Importante' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Abrir Importante, no urgente' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Abrir Urgente, no importante' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Abrir Ni urgente ni importante' })).toBeVisible();
 
-    await user.click(screen.getByRole('button', { name: 'Abrir Urgente e importante' }));
-    await user.type(
-      screen.getByLabelText('Nueva tarea para Hacer de inmediato'),
-      'Resolver entrega',
-    );
+    await user.click(screen.getByRole('button', { name: 'Abrir Importante' }));
+    await user.type(screen.getByLabelText('Nueva tarea para Importante'), 'Resolver entrega');
     await user.click(screen.getByRole('button', { name: 'Agregar tarea' }));
 
     expect(await screen.findByRole('button', { name: 'Completar Resolver entrega' })).toBeVisible();
@@ -137,7 +135,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Eliminar Resolver entrega' }));
     await waitFor(async () => expect(await db.eisenhowerTasks.count()).toBe(0));
     await user.click(screen.getByRole('button', { name: 'Volver a los cuatro cuadrantes' }));
-    expect(screen.getByRole('button', { name: 'Abrir Urgente e importante' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Abrir Importante' })).toBeVisible();
   }, 15000);
 
   it('agrega Economía desde herramientas y calcula el presupuesto mensual', async () => {
@@ -147,7 +145,8 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Otras herramientas' }));
     await user.click(screen.getByRole('button', { name: 'Economía' }));
 
-    expect(screen.getAllByRole('tab')[0]).toHaveAccessibleName('Economía');
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs[tabs.length - 1]).toHaveAccessibleName('Economía');
     expect(screen.getByRole('tab', { name: 'Economía' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('heading', { name: 'Economía mensual' })).toBeVisible();
 

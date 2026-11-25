@@ -3,12 +3,12 @@ import type { TouchEvent } from 'react';
 import type { AppSection } from './useHashTab';
 
 const SECTION_ORDER: ReadonlyArray<AppSection> = [
-  'economy',
-  'eisenhower',
   'personal-notes',
   'tasks',
   'routine',
   'almanac',
+  'eisenhower',
+  'economy',
 ];
 /** Un deslizado corto pero decidido: menos que eso es un toque o un scroll interrumpido. */
 const MIN_SWIPE_PX = 60;

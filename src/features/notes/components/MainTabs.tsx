@@ -43,11 +43,11 @@ export function MainTabs({
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
   const [showTools, setShowTools] = useState(false);
   const tabs = [
-    ...(economyAdded ? [{ value: 'economy' as const, label: 'Economía', Icon: WalletIcon }] : []),
+    ...BASE_TABS,
     ...(eisenhowerAdded
       ? [{ value: 'eisenhower' as const, label: 'Pendientes', Icon: GridIcon }]
       : []),
-    ...BASE_TABS,
+    ...(economyAdded ? [{ value: 'economy' as const, label: 'Economía', Icon: WalletIcon }] : []),
   ];
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
